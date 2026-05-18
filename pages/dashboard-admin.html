@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Administrador</title>
+  <link rel="stylesheet" href="../assets/css/global.css" />
+  <link rel="stylesheet" href="../assets/css/dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-shield-alt"></i>
+        <h3 id="admin-nome">Painel Admin</h3>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="#inicio" class="menu-item active" data-menu="inicio">
+          <i class="fas fa-home"></i>
+          <span>Visão Geral</span>
+        </a>
+        <a href="#usuarios" class="menu-item" data-menu="usuarios">
+          <i class="fas fa-users-cog"></i>
+          <span>Gestão de Utilizadores</span>
+        </a>
+        <a href="#rotas" class="menu-item" data-menu="rotas">
+          <i class="fas fa-route"></i>
+          <span>Rotas e Veículos</span>
+        </a>
+        <a href="#configuracoes" class="menu-item" data-menu="configuracoes">
+          <i class="fas fa-cogs"></i>
+          <span>Configurações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <h2 id="page-title">Visão Geral</h2>
+        </div>
+        <div class="top-bar-right">
+          <div class="profile-widget">
+            <img id="profile-avatar" src="https://via.placeholder.com/40" alt="Perfil" class="avatar" />
+            <span id="profile-name">Administrador</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <!-- SEÇÃO INÍCIO (VISÃO GERAL) -->
+        <section id="inicio-section" class="dashboard-section active">
+          <div class="section-header">
+            <h1>Visão Geral do Sistema</h1>
+            <p>Métricas em tempo real da operação Vantrack</p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card stat-card">
+              <div class="card-body" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-bus fa-3x" style="color: var(--primary-color);"></i>
+                <h2 style="margin: 1rem 0;">12</h2>
+                <p>Veículos Ativos</p>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="card-body" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-users fa-3x" style="color: var(--secondary-color);"></i>
+                <h2 style="margin: 1rem 0;">145</h2>
+                <p>Alunos Inscritos</p>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="card-body" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-user-tie fa-3x" style="color: var(--dark-color);"></i>
+                <h2 style="margin: 1rem 0;">8</h2>
+                <p>Motoristas Verificados</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEÇÃO USUÁRIOS -->
+        <section id="usuarios-section" class="dashboard-section">
+          <div class="section-header">
+            <h1>Gestão de Utilizadores</h1>
+            <p>Ative, desative e supervisione as contas do sistema</p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card list-card" style="grid-column: 1 / -1;">
+              <div class="card-header" style="display: flex; justify-content: space-between;">
+                <h3><i class="fas fa-list"></i> Todos os Utilizadores</h3>
+                <button class="btn-primary-small"><i class="fas fa-plus"></i> Novo Utilizador</button>
+              </div>
+              <div class="card-body">
+                <table class="alunos-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Perfil</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usuarios-table-body">
+                    <tr>
+                      <td>#1001</td>
+                      <td>Carlos (Motorista)</td>
+                      <td>carlos@teste.com</td>
+                      <td>Motorista</td>
+                      <td><span class="badge badge-ativa">Ativo</span></td>
+                      <td>
+                        <button class="btn-small btn-editar"><i class="fas fa-edit"></i></button>
+                        <button class="btn-small btn-negado"><i class="fas fa-ban"></i></button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>#2001</td>
+                      <td>Maria Silva</td>
+                      <td>maria@teste.com</td>
+                      <td>Aluno</td>
+                      <td><span class="badge badge-aguardando" style="background: #f39c12; color: #fff;">Pendente</span></td>
+                      <td>
+                        <button class="btn-small btn-confirmar"><i class="fas fa-check"></i></button>
+                        <button class="btn-small btn-negado"><i class="fas fa-trash"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEÇÃO ROTAS -->
+        <section id="rotas-section" class="dashboard-section">
+          <div class="section-header">
+            <h1>Rotas e Veículos</h1>
+            <p>Administração da frota e percursos escolares</p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card list-card" style="grid-column: 1 / -1;">
+              <div class="card-header" style="display: flex; justify-content: space-between;">
+                <h3><i class="fas fa-map-marked-alt"></i> Rotas Cadastradas</h3>
+                <button class="btn-primary-small"><i class="fas fa-route"></i> Criar Rota</button>
+              </div>
+              <div class="card-body">
+                <div class="rotas-list" id="rotas-admin-list">
+                  <div class="rota-item">
+                    <div class="rota-header">
+                      <h4>Rota 01 - Zona Sul</h4>
+                      <span class="badge badge-ativa">Ativa</span>
+                    </div>
+                    <p class="rota-detalhe"><i class="fas fa-car"></i> Veículo: Placa ABC-1234 (Motorista Carlos)</p>
+                    <p class="rota-detalhe"><i class="fas fa-users"></i> Capacidade: 12/15 Alunos</p>
+                    <div style="margin-top: 10px;">
+                        <button class="btn-small btn-editar">Editar</button>
+                        <button class="btn-small btn-negado" style="background: #e74c3c;">Desativar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEÇÃO CONFIGURAÇÕES -->
+        <section id="configuracoes-section" class="dashboard-section">
+          <div class="section-header">
+            <h1>Configurações Globais</h1>
+            <p>Parâmetros do sistema</p>
+          </div>
+
+          <div class="cards-grid config-grid">
+            <div class="card config-card">
+              <div class="card-header">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Segurança</h3>
+              </div>
+              <div class="card-body">
+                <div class="config-checkbox">
+                  <label>
+                    <input type="checkbox" checked />
+                    Obrigar Autenticação 2FA (Todos)
+                  </label>
+                </div>
+                <div class="config-item" style="margin-top: 15px;">
+                  <button class="btn-small btn-seguranca">Auditoria de Logs</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="container-notificacoes"></div>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/ui-feedback.js"></script>
+  <script src="../assets/js/dashboard-admin.js"></script>
+</body>
+</html>

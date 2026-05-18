@@ -3,23 +3,34 @@ from datetime import datetime
 
 def validar_email(email):
     """Valida formato de email"""
+    if len(email) > 254:
+        raise ValueError("Email excede o limite de 254 caracteres")
     padrao = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     if not re.match(padrao, email):
         raise ValueError("Email inválido")
     return True
 
 def validar_cpf(cpf):
-    """Valida CPF (formato básico)"""
-    cpf_limpo = cpf.replace('.', '').replace('-', '')
-    if not re.match(r'^\d{11}$', cpf_limpo):
-        raise ValueError("CPF deve conter 11 dígitos")
+    """Valida CPF (mod 11)"""
+    cpf_limpo = re.sub(r'[^0-9]', '', cpf)
+    if len(cpf_limpo) != 11:
+        raise ValueError("CPF deve conter exatamente 11 dígitos")
+    if cpf_limpo == cpf_limpo[0] * 11:
+        raise ValueError("CPF inválido")
+    
+    # Mod 11
+    for i in range(9, 11):
+        valor = sum((int(cpf_limpo[num]) * ((i+1) - num) for num in range(0, i)))
+        digito = ((valor * 10) % 11) % 10
+        if str(digito) != cpf_limpo[i]:
+            raise ValueError("CPF com dígito verificador inválido")
     return True
 
 def validar_telefone(telefone):
-    """Valida número de telefone"""
-    telefone_limpo = telefone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
-    if not re.match(r'^[0-9]{10,11}$', telefone_limpo):
-        raise ValueError("Telefone inválido")
+    """Valida número de telefone brasileiro"""
+    telefone_limpo = re.sub(r'[^0-9]', '', telefone)
+    if not re.match(r'^1[0-9]\d{9}$', telefone_limpo):
+        raise ValueError("Telefone deve ter 11 dígitos e formato brasileiro começando com 1x")
     return True
 
 def validar_senha(senha):

@@ -3,12 +3,15 @@ from infra.usuario_repository import UsuarioRepository
 from infra.dois_fatores_repository import Dois_FatoresRepository
 from use_cases.autenticar_usuario import AutenticarUsuario, CadastrarUsuario, RecuperarSenha
 from use_cases.dois_fatores_commands import GenerarCodigoVerificacao2FA, EnviarCodigoVerificacao2FA
+from use_cases.validators import validar_email, validar_cpf, validar_telefone, validar_senha
 from domain.usuario import UsuarioCreate, UsuarioLogin, UsuarioRecuperarSenha
 from exceptions import VantrackException
 import os
 import hashlib
 import traceback
 import logging
+import jwt
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -49,20 +52,15 @@ def cadastro():
             print(f"[CADASTRO] ✗ Campos vazios: {campos_vazios}")
             return jsonify({'erro': f'Campos obrigatórios estão vazios: {", ".join(campos_vazios)}'}), 400
         
-        # VALIDAÇÃO ADICIONAL: CPF e Telefone devem ter dígitos suficientes
-        cpf_apenas_digitos = dados.get('cpf', '').replace('.', '').replace('-', '').replace('/', '')
-        telefone_apenas_digitos = dados.get('telefone', '').replace('(', '').replace(')', '').replace('-', '').replace(' ', '')
-        
-        print(f"[CADASTRO] CPF dígitos: {len(cpf_apenas_digitos)} (esperado: 11)")
-        print(f"[CADASTRO] Telefone dígitos: {len(telefone_apenas_digitos)} (esperado: 10-11)")
-        
-        if len(cpf_apenas_digitos) < 11:
-            print("[CADASTRO] ✗ CPF inválido (menos de 11 dígitos)")
-            return jsonify({'erro': 'CPF deve ter pelo menos 11 dígitos'}), 400
-        
-        if len(telefone_apenas_digitos) < 10:
-            print("[CADASTRO] ✗ Telefone inválido (menos de 10 dígitos)")
-            return jsonify({'erro': 'Telefone deve ter pelo menos 10 dígitos'}), 400
+        # VALIDAÇÃO DUPLA (Frontend/Backend)
+        try:
+            validar_email(dados.get('email', ''))
+            validar_cpf(dados.get('cpf', ''))
+            validar_telefone(dados.get('telefone', ''))
+            validar_senha(dados.get('senha', ''))
+        except ValueError as e:
+            print(f"[CADASTRO] ✗ Erro de validação: {str(e)}")
+            return jsonify({'erro': str(e)}), 400
         
         # Criar objeto UsuarioCreate
         print("[CADASTRO] Criando objeto UsuarioCreate...")
@@ -106,8 +104,31 @@ def login():
         
         resultado = autenticar_use_case.executar(usuario_login.email, usuario_login.senha)
         
-        # Por enquanto, login simples sem 2FA
-        return jsonify(resultado), 200
+        # IMPLEMENTAÇÃO DO 2FA (Passo 3)
+        user_agent = request.headers.get('User-Agent', 'unknown')
+        ip_address = request.remote_addr
+        dispositivo_hash = hashlib.sha256(f"{user_agent}:{ip_address}".encode()).hexdigest()
+        
+        dois_fatores_repo = Dois_FatoresRepository(current_app.db)
+        
+        # Gerar código OTP para envio por EMAIL
+        gerar_2fa = GenerarCodigoVerificacao2FA(usuario_repo, dois_fatores_repo)
+        codigo_info = gerar_2fa.executar(resultado['usuario']['id'], dispositivo_hash, 'EMAIL')
+        
+        # Enviar o código (Simulado no terminal ou via SMTP)
+        enviar_2fa = EnviarCodigoVerificacao2FA(dois_fatores_repo)
+        enviar_2fa.executar(codigo_info['dois_fatores_id'])
+        
+        # Retorna o temp_token em vez do JWT final (usamos o JWT como token temporário restrito por sessão no frontend)
+        return jsonify({
+            'requer_2fa': True,
+            'dois_fatores_id': codigo_info['dois_fatores_id'],
+            'usuario_id': resultado['usuario']['id'],
+            'metodo': 'EMAIL',
+            'email_mascarado': codigo_info['email_mascarado'],
+            'temp_token': resultado['token'],
+            'usuario': resultado['usuario']
+        }), 206
     
     except VantrackException as e:
         return jsonify({'erro': str(e)}), 401
@@ -136,3 +157,30 @@ def recuperar_senha():
         return jsonify({'erro': str(e)}), 400
     except Exception as e:
         return jsonify({'erro': 'Erro ao recuperar senha'}), 500
+
+@bp.route('/refresh', methods=['POST'])
+def refresh_token():
+    try:
+        dados = request.get_json()
+        refresh_token = dados.get('refresh_token')
+        if not refresh_token:
+            return jsonify({'erro': 'Refresh token ausente'}), 400
+            
+        payload = jwt.decode(refresh_token, os.getenv('JWT_SECRET', 'seu-secreto-jwt-super-seguro'), algorithms=['HS256'])
+        if payload.get('tipo') != 'refresh':
+            return jsonify({'erro': 'Token inválido'}), 401
+            
+        novo_payload = {
+            'usuario_id': payload['usuario_id'],
+            'tipo_perfil': payload['tipo_perfil'],
+            'exp': datetime.utcnow() + timedelta(hours=24), # Token de curta duração
+            'iat': datetime.utcnow(),
+            'tipo': 'access'
+        }
+        novo_token = jwt.encode(novo_payload, os.getenv('JWT_SECRET', 'seu-secreto-jwt-super-seguro'), algorithm='HS256')
+        
+        return jsonify({'token': novo_token}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'erro': 'Refresh token expirado. Faça login novamente.'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'erro': 'Refresh token inválido'}), 401

@@ -11,6 +11,8 @@ from use_cases.dois_fatores_commands import (
 from exceptions import VantrackException
 import hashlib
 import os
+import jwt
+from datetime import datetime, timedelta
 
 bp = Blueprint('dois_fatores', __name__, url_prefix='/api/dois-fatores')
 
@@ -113,7 +115,36 @@ def verificar_codigo():
         use_case = VerificarCodigoVerificacao2FA(dois_fatores_repo)
         resultado = use_case.executar(usuario_id, dispositivo_hash, codigo_fornecido)
 
-        return jsonify(resultado), 200
+        # Gerar o JWT final após a verificação bem-sucedida!
+        usuario = UsuarioRepository(current_app.db).buscar_por_id(usuario_id)
+        payload = {
+            'usuario_id': usuario['id'],
+            'email': usuario['email'],
+            'tipo_perfil': usuario['tipo_perfil'],
+            'exp': datetime.utcnow() + timedelta(minutes=15), # Curta duração
+            'iat': datetime.utcnow(),
+            'tipo': 'access'
+        }
+        token = jwt.encode(payload, os.getenv('JWT_SECRET', 'seu-secreto-jwt-super-seguro'), algorithm='HS256')
+
+        # Gerar Refresh Token
+        payload_refresh = {
+            'usuario_id': usuario['id'],
+            'tipo_perfil': usuario['tipo_perfil'],
+            'exp': datetime.utcnow() + timedelta(days=7), # Longa duração
+            'iat': datetime.utcnow(),
+            'tipo': 'refresh'
+        }
+        refresh_token = jwt.encode(payload_refresh, os.getenv('JWT_SECRET', 'seu-secreto-jwt-super-seguro'), algorithm='HS256')
+
+        return jsonify({
+            'status': 'verificado',
+            'token': token,
+            'refresh_token': refresh_token,
+            'usuario_id': usuario_id,
+            'dispositivo_hash': dispositivo_hash,
+            'verificado_em': use_case.dois_fatores_repository.buscar_ativo_por_usuario_e_dispositivo(usuario_id, dispositivo_hash).verificado_em.isoformat()
+        }), 200
 
     except VantrackException as e:
         return jsonify({'erro': str(e)}), 400

@@ -1,15 +1,93 @@
 requireAuth();
-if(!temPerfil('motorista')){mostrarNotificacao('Acesso apenas para motoristas','erro');setTimeout(()=>logout(),1500);}
 
 let map=null,marker=null,watchId=null;
+let socketRastreamento=null;
 const mapContainer='mapa';
 
 document.addEventListener('DOMContentLoaded',()=>{
     initMapa();
-    document.getElementById('btn-registrar')?.addEventListener('click',registrarLocalizacao);
-    document.getElementById('btn-atualizar')?.addEventListener('click',carregarHistorico);
-    carregarHistorico();
+    initSocketRastreamento();
+    
+    if (temPerfil('motorista')) {
+        document.getElementById('btn-registrar')?.addEventListener('click',iniciarRastreamentoMotorista);
+        document.getElementById('btn-atualizar')?.addEventListener('click',carregarHistorico);
+        carregarHistorico();
+    } else {
+        const btnRegistrar = document.getElementById('btn-registrar');
+        const btnAtualizar = document.getElementById('btn-atualizar');
+        if (btnRegistrar) btnRegistrar.style.display = 'none';
+        if (btnAtualizar) btnAtualizar.style.display = 'none';
+    }
 });
+
+function initSocketRastreamento() {
+    const token = getToken();
+    if (!token) return;
+
+    socketRastreamento = io('http://localhost:5000/rastreamento', {
+        auth: { token: token },
+        reconnection: true
+    });
+
+    socketRastreamento.on('connect', () => {
+        console.log('Conectado ao socket de rastreamento');
+        if (temPerfil('aluno')) {
+            const rotaId = document.getElementById('rota-id')?.value || 1;
+            socketRastreamento.emit('inscrever_rota', { rota_id: parseInt(rotaId) });
+        }
+    });
+
+    socketRastreamento.on('disconnect', () => {
+        mostrarNotificacao('Conexão de GPS perdida. Tentando reconectar...', 'erro');
+    });
+
+    socketRastreamento.on('atualizacao_localizacao', (data) => {
+        if (temPerfil('aluno')) {
+            console.log('Nova localização recebida:', data);
+            atualizarMapa(data.latitude, data.longitude);
+        }
+    });
+}
+
+function iniciarRastreamentoMotorista(){
+    if(!navigator.geolocation){mostrarNotificacao('Geolocalização não disponível','erro');return;}
+    const btn=document.getElementById('btn-registrar');
+    
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+        btn.textContent='Iniciar Rastreamento';
+        mostrarNotificacao('Rastreamento pausado', 'info');
+        return;
+    }
+    
+    btn.textContent='Rastreando... (Clique para parar)';
+    mostrarNotificacao('Rastreamento ativado!', 'sucesso');
+    
+    const veiculoId = document.getElementById('veiculo-id')?.value || 1;
+    
+    watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            atualizarMapa(lat, lng);
+            
+            if (socketRastreamento && socketRastreamento.connected) {
+                socketRastreamento.emit('atualizar_localizacao', {
+                    veiculo_id: parseInt(veiculoId),
+                    latitude: lat,
+                    longitude: lng
+                });
+            }
+        },
+        (err) => {
+            mostrarNotificacao('Erro no GPS: ' + err.message, 'erro');
+            btn.textContent='Iniciar Rastreamento';
+            watchId = null;
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+}
 
 function initMapa(){
     if(!document.getElementById(mapContainer))return;

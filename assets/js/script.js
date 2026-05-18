@@ -104,9 +104,9 @@ async function handleCadastro(e,tp){
             senha: s
         };
         
-        console.log('[CADASTRO] Enviando payload para /api/cadastro:', payload);
+        console.log('[CADASTRO] Enviando payload para ' + CONFIG.ENDPOINTS.CADASTRO + ':', payload);
         
-        const r=await fetchAPI('POST','/api/cadastro',payload);
+        const r=await fetchAPI('POST',CONFIG.ENDPOINTS.CADASTRO,payload);
         
         console.log('[CADASTRO] Resposta recebida:', r);
         

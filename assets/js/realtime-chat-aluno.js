@@ -11,8 +11,10 @@ const ChatRealtime = {
     }
 
     socketChat = io('http://localhost:5000/chat', {
+      auth: {
+        token: token
+      },
       query: {
-        token: token,
         usuario_id: usuarioID
       },
       reconnection: true,
@@ -37,6 +39,9 @@ const ChatRealtime = {
 
   onDesconectado: () => {
     console.log('Desconectado do servidor de chat');
+    if (typeof mostrarNotificacao === 'function') {
+      mostrarNotificacao('Conexão de chat perdida. Tentando reconectar...', 'aviso');
+    }
   },
 
   onStatusConectado: (data) => {
@@ -67,6 +72,9 @@ const ChatRealtime = {
 
   onErro: (data) => {
     console.error('Erro no chat:', data.mensagem);
+    if (typeof mostrarNotificacao === 'function') {
+      mostrarNotificacao(data.mensagem || 'Erro na conexão de chat', 'erro');
+    }
   },
 
   setupEventos: () => {

@@ -1,9 +1,12 @@
 const CONFIG = {
     API_URL: 'http://localhost:5000/api',
     TOKEN_KEY: 'vantrack_token',
-    USER_KEY: 'vantrack_user'
+    USER_KEY: 'vantrack_user',
+    ENDPOINTS: {
+        LOGIN: '/login',
+        CADASTRO: '/cadastro'
+    }
 };
-
 function setToken(token) { localStorage.setItem(CONFIG.TOKEN_KEY, token); }
 function getToken() { return localStorage.getItem(CONFIG.TOKEN_KEY); }
 function setUser(user) { localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(user)); }

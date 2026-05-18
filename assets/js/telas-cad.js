@@ -61,7 +61,7 @@ if (formCadastro) {
             };
 
             // Enviar para o endpoint de cadastro no backend
-            const resposta = await fetchAPI('POST', '/api/cadastro', payload);
+            const resposta = await fetchAPI('POST', CONFIG.ENDPOINTS.CADASTRO, payload);
 
             mostrarNotificacao('Cadastro realizado com sucesso! Redirecionando...', 'sucesso');
             

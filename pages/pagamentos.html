@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vantrack - Pagamentos</title>
+  <link rel="stylesheet" href="../assets/css/global.css" />
+  <link rel="stylesheet" href="../assets/css/dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-wallet"></i>
+        <h3>Financeiro</h3>
+      </div>
+      <nav class="sidebar-menu">
+        <a href="#" class="menu-item" id="btn-voltar-dashboard">
+          <i class="fas fa-arrow-left"></i>
+          <span>Voltar ao Painel</span>
+        </a>
+        <a href="#faturas" class="menu-item active" data-menu="faturas">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Faturas & Recibos</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <h2 id="page-title">Gestão de Pagamentos</h2>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <section id="faturas-section" class="dashboard-section active">
+          <div class="section-header">
+            <h1>Suas Faturas</h1>
+            <p>Controle das mensalidades escolares</p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card list-card" style="grid-column: 1 / -1;">
+              <div class="card-body">
+                <table class="alunos-table">
+                  <thead>
+                    <tr>
+                      <th>Ref. Mensalidade</th>
+                      <th>Data de Vencimento</th>
+                      <th>Valor (R$)</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pagamentos-table-body">
+                    <tr>
+                      <td>Maio / 2026</td>
+                      <td>10/05/2026</td>
+                      <td>R$ 250,00</td>
+                      <td><span class="badge badge-ativa" style="background: #27ae60;">Pago</span></td>
+                      <td><button class="btn-small"><i class="fas fa-download"></i> Recibo</button></td>
+                    </tr>
+                    <tr>
+                      <td>Junho / 2026</td>
+                      <td>10/06/2026</td>
+                      <td>R$ 250,00</td>
+                      <td><span class="badge badge-aguardando" style="background: #e74c3c; color: white;">Pendente</span></td>
+                      <td><button class="btn-primary-small"><i class="fas fa-credit-card"></i> Pagar Agora</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/pagamentos.js"></script>
+</body>
+</html>

@@ -25,23 +25,23 @@ async function handleLogin(e){
     if(!document.getElementById('perfil').value){mostrarNotificacao('Selecione um perfil','erro');return;}
     const b=this.querySelector('button[type="submit"]');b.disabled=true;b.textContent='Entrando...';
     try{
-        const r=await fetchAPI('POST','/login',{email:email,senha:senha});
+        const r=await fetchAPI('POST',CONFIG.ENDPOINTS.LOGIN,{email:email,senha:senha});
         if(r){
             // Verificar se requer 2FA
             if(r.requer_2fa && r.dois_fatores_id){
-                // Novo dispositivo - guardar dados na sessão e redirecionar para 2FA
+                // Novo dispositivo ou conta protegida - guardar dados na sessão e redirecionar para 2FA
                 const dados2FA={
                     dois_fatores_id:r.dois_fatores_id,
                     usuario_id:r.usuario_id,
                     metodo:r.metodo,
                     telefone_mascarado:r.telefone_mascarado,
                     email_mascarado:r.email_mascarado,
-                    auth_token:r.auth_token,
+                    temp_token:r.temp_token,
                     usuario_dados:r.usuario
                 };
                 sessionStorage.setItem('dados_2fa',JSON.stringify(dados2FA));
-                mostrarNotificacao('Novo dispositivo detectado. Aguarde...','info',1500);
-                setTimeout(()=>window.location.href='./2fa.html',1000);
+                mostrarNotificacao('Autenticação em Dois Fatores exigida. Aguarde...','info',1500);
+                setTimeout(()=>window.location.href='/pages/2fa.html',1000);
             }else if(r.token){
                 // Dispositivo conhecido - login normal
                 setToken(r.token);setUser(r.usuario);mostrarNotificacao('Login OK!','sucesso',1500);

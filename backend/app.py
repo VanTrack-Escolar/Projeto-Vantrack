@@ -3,6 +3,8 @@ import sys
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -15,6 +17,13 @@ def criar_app():
     from config import config
     env = os.getenv('FLASK_ENV', 'development')
     app.config.from_object(config[env])
+
+    limiter = Limiter(
+        get_remote_address,
+        app=app,
+        default_limits=["200 per day", "50 per hour"],
+        storage_uri="memory://"
+    )
 
     CORS(app)
     socketio = SocketIO(app, cors_allowed_origins='*', async_mode='threading')
@@ -87,6 +96,7 @@ def criar_app():
 
     return app, socketio
 
+app, socketio = criar_app()
+
 if __name__ == '__main__':
-    app, socketio = criar_app()
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)

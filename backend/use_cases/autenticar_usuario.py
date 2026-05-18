@@ -1,4 +1,4 @@
-import bcrypt
+import hashlib
 import jwt
 import os
 from datetime import datetime, timedelta
@@ -14,7 +14,8 @@ class AutenticarUsuario:
         if not usuario:
             raise UsuarioNaoEncontrado(f"Usuário com email {email} não encontrado")
         
-        if not bcrypt.checkpw(senha.encode(), usuario['senha_hash'].encode()):
+        senha_hash_input = hashlib.sha256(senha.encode('utf-8')).hexdigest()
+        if senha_hash_input != usuario['senha_hash']:
             raise SenhaInvalida("Senha incorreta")
         
         # Gerar JWT
@@ -57,9 +58,9 @@ class CadastrarUsuario:
                 raise CPFJaCadastrado(f"CPF {dados.cpf} já cadastrado")
             print(f"[USE-CASE] ✓ CPF disponível")
             
-            # Hash da senha
+            # Hash da senha com SHA-256
             print(f"[USE-CASE] Hasheando senha...")
-            senha_hash = bcrypt.hashpw(dados.senha.encode(), bcrypt.gensalt()).decode()
+            senha_hash = hashlib.sha256(dados.senha.encode('utf-8')).hexdigest()
             print(f"[USE-CASE] ✓ Senha hasheada")
             
             # Criar objeto Usuario
@@ -104,8 +105,8 @@ class RecuperarSenha:
         if not usuario:
             raise UsuarioNaoEncontrado(f"Usuário com email {email} não encontrado")
         
-        # Hash da nova senha
-        senha_hash = bcrypt.hashpw(nova_senha.encode(), bcrypt.gensalt()).decode()
+        # Hash da nova senha com SHA-256
+        senha_hash = hashlib.sha256(nova_senha.encode('utf-8')).hexdigest()
         
         self.usuario_repository.atualizar(usuario['id'], {'senha_hash': senha_hash})
         

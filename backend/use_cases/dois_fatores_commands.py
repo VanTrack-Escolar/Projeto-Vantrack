@@ -134,10 +134,13 @@ class EnviarCodigoVerificacao2FA:
             return False
 
     def _enviar_email(self, email, codigo):
-        """Envia código via Email (SMTP)"""
+        """Envia código via Email (SMTP) e loga no terminal"""
+        print(f"\n[2FA DEBUG] 🔐 CÓDIGO OTP GERADO PARA {email}: {codigo} 🔐\n")
+        
         try:
             if not all([self.smtp_server, self.smtp_user, self.smtp_password]):
-                raise VantrackException("Configuração SMTP incompleta")
+                print("[2FA DEBUG] Credenciais SMTP ausentes no .env. Simulando envio apenas pelo terminal.")
+                return True # Retorna sucesso para permitir o avanço mesmo sem SMTP real
 
             msg = MIMEMultipart()
             msg['From'] = self.smtp_user

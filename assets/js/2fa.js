@@ -105,7 +105,7 @@ async function verificarCodigo() {
   const codigo = Array.from(digitos).map(d => d.value).join('');
 
   if (codigo.length !== 6 || !codigo.match(/^[0-9]{6}$/)) {
-    alert('Por favor, insira um código válido de 6 dígitos');
+    mostrarNotificacao('Por favor, insira um código válido de 6 dígitos', 'erro');
     return;
   }
 
@@ -120,7 +120,7 @@ async function verificarCodigo() {
   btnSubmit.disabled = true;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/dois-fatores/verificar`, {
+    const response = await fetch(`${CONFIG.API_URL}/dois-fatores/verificar`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -133,37 +133,39 @@ async function verificarCodigo() {
 
     const resultado = await response.json();
 
-    if (response.ok && resultado.status === 'verificado') {
-      // Salvar token e dados do usuário
-      localStorage.setItem('auth_token', dados2FA.auth_token);
-      localStorage.setItem('usuario_id', dados2FA.usuario_id);
-      localStorage.setItem('usuario_dados', JSON.stringify(dados2FA.usuario_dados));
-
-      // Limpar sessão
+    if (response.ok && resultado.status === 'verificado' && resultado.token) {
+      // Salvar JWT final
+      setToken(resultado.token);
+      
+      // Limpar sessão temporária
       sessionStorage.removeItem('dados_2fa');
 
-      // Redirecionar para dashboard
-      const perfil = dados2FA.usuario_dados.tipo_perfil;
-      if (perfil === 'motorista') {
-        window.location.href = '../pages/dashboard-motorista.html';
-      } else {
-        window.location.href = '../pages/dashboard-aluno.html';
-      }
+      mostrarNotificacao('Código verificado! Entrando...', 'sucesso', 1500);
+
+      setTimeout(() => {
+          // Redirecionar para dashboard
+          const perfil = dados2FA.usuario_dados.tipo_perfil;
+          if (perfil === 'motorista') {
+            window.location.href = '/pages/dashboard-motorista.html';
+          } else {
+            window.location.href = '/pages/dashboard-aluno.html';
+          }
+      }, 1000);
     } else {
-      const tentativasRestantes = resultado.tentativas_restantes || tentativasRestantes;
+      const tentativasRestantes = resultado.tentativas_restantes || window.tentativasRestantes;
       atualizarTentativas(tentativasRestantes);
       
       if (tentativasRestantes <= 0) {
-        alert('Número máximo de tentativas atingido. Faça login novamente.');
-        window.location.href = '../index.html';
+        mostrarNotificacao('Número máximo de tentativas atingido. Faça login novamente.', 'erro', 2000);
+        setTimeout(() => window.location.href = '/pages/index.html', 1500);
       } else {
-        alert(`Código inválido. ${resultado.erro || 'Tente novamente.'}`);
+        mostrarNotificacao(`Código inválido! ${resultado.erro || 'Tente novamente.'}`, 'erro');
         limparCodigo();
       }
     }
   } catch (erro) {
     console.error('Erro ao verificar código:', erro);
-    alert('Erro ao verificar código. Tente novamente.');
+    mostrarNotificacao('Erro ao verificar código. Tente novamente.', 'erro');
   } finally {
     btnText.style.display = 'inline';
     btnSpinner.style.display = 'none';
@@ -176,7 +178,7 @@ async function enviarCodigo2FA() {
   
   try {
     const response = await fetch(
-      `${API_BASE_URL}/dois-fatores/enviar/${dados2FA.dois_fatores_id}`,
+      `${CONFIG.API_URL}/dois-fatores/enviar/${dados2FA.dois_fatores_id}`,
       { method: 'POST' }
     );
 
@@ -198,21 +200,21 @@ async function reenviarCodigo() {
     btnReenviar.disabled = true;
 
     const response = await fetch(
-      `${API_BASE_URL}/dois-fatores/reenviar/${dados2FA.dois_fatores_id}`,
+      `${CONFIG.API_URL}/dois-fatores/reenviar/${dados2FA.dois_fatores_id}`,
       { method: 'POST' }
     );
 
     if (response.ok) {
-      alert('Código reenviado com sucesso!');
+      mostrarNotificacao('Código reenviado com sucesso!', 'sucesso');
       limparCodigo();
       iniciarTimerReenvio();
     } else {
       const erro = await response.json();
-      alert(`Erro ao reenviar: ${erro.erro || 'Tente novamente mais tarde'}`);
+      mostrarNotificacao(`Erro ao reenviar: ${erro.erro || 'Tente novamente mais tarde'}`, 'erro');
     }
   } catch (erro) {
     console.error('Erro ao reenviar código:', erro);
-    alert('Erro ao reenviar código. Tente novamente.');
+    mostrarNotificacao('Erro ao reenviar código. Tente novamente.', 'erro');
   }
 }
 
