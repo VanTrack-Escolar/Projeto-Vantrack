@@ -4,6 +4,14 @@ document.addEventListener('DOMContentLoaded',()=>{
         mostrarNotificacao('Sua sessão expirou. Faça login novamente.','aviso',4000);
         window.history.replaceState({}, document.title, window.location.pathname);
     }
+    const reportStr = localStorage.getItem('sessao_debug_report');
+    if(reportStr){
+        try{
+            const report = JSON.parse(reportStr);
+            mostrarNotificacao(`Diagnóstico: Token=${report.token} | Usuário=${report.usuario} | Chaves=${report.localStorageKeys.join(',')}`,'erro',10000);
+            localStorage.removeItem('sessao_debug_report');
+        }catch(err){}
+    }
     const fL=document.getElementById('form-login'), fRS=document.getElementById('form-recuperar-senha'), bTS=document.querySelector('.toggle-senha');
     const dH=document.querySelector('.dropdown-header'), dL=document.getElementById('dropdown-perfil-list'), dI=document.querySelectorAll('.dropdown-item');
     if(fL) fL.addEventListener('submit',handleLogin);

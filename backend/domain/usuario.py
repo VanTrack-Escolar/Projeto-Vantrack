@@ -7,6 +7,7 @@ class Usuario(BaseModel):
     cpf: str
     senha_hash: str
     nome: str
+    sobrenome: str
     telefone: str
     cidade: str
     tipo_perfil: str
@@ -27,6 +28,7 @@ class UsuarioCreate(BaseModel):
     email: str
     cpf: str
     nome: str
+    sobrenome: str = ""
     telefone: str
     cidade: str
     tipo_perfil: str

@@ -143,7 +143,7 @@ def verificar_codigo():
             'refresh_token': refresh_token,
             'usuario_id': usuario_id,
             'dispositivo_hash': dispositivo_hash,
-            'verificado_em': use_case.dois_fatores_repository.buscar_ativo_por_usuario_e_dispositivo(usuario_id, dispositivo_hash).verificado_em.isoformat()
+            'verificado_em': resultado['verificado_em']
         }), 200
 
     except VantrackException as e:

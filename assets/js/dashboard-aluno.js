@@ -13,11 +13,23 @@ function validarSessao() {
   const token = localStorage.getItem('auth_token');
   const usuario = localStorage.getItem('usuario_dados');
   
+  console.log('[SESSÃO DEBUG] Validando sessão no dashboard do Aluno...');
+  console.log('[SESSÃO DEBUG] auth_token:', token ? `PRESENTE (${token.substring(0, 15)}...)` : 'AUSENTE (null)');
+  console.log('[SESSÃO DEBUG] usuario_dados:', usuario ? usuario : 'AUSENTE (null)');
+  
   if (!token || !usuario) {
+    console.warn('[SESSÃO DEBUG] Validação falhou! Redirecionando para login...');
+    const report = {
+      token: token ? "PRESENTE" : "AUSENTE",
+      usuario: usuario ? "PRESENTE" : "AUSENTE",
+      localStorageKeys: Object.keys(localStorage)
+    };
+    localStorage.setItem('sessao_debug_report', JSON.stringify(report));
     clearAuth();
     window.location.href = '/pages/index.html?session_expired=true';
     return false;
   }
+  console.log('[SESSÃO DEBUG] Validação OK! Usuário autenticado.');
   return true;
 }
 
@@ -29,8 +41,17 @@ function carregarDadosUsuario() {
     usuarioAtual = JSON.parse(usuarioJSON);
     document.getElementById('aluno-nome').textContent = usuarioAtual.nome;
     document.getElementById('profile-name').textContent = usuarioAtual.nome;
-    document.getElementById('config-nome').textContent = usuarioAtual.nome;
-    document.getElementById('config-email').textContent = usuarioAtual.email;
+    
+    // Preencher dados na tela de Perfil
+    const elPerfilNome = document.getElementById('perfil-nome');
+    if (elPerfilNome) {
+      const nomeCompleto = (usuarioAtual.nome + ' ' + (usuarioAtual.sobrenome || '')).trim();
+      elPerfilNome.value = nomeCompleto || usuarioAtual.nome;
+      document.getElementById('perfil-nome-titulo').textContent = nomeCompleto || usuarioAtual.nome;
+      document.getElementById('perfil-email').value = usuarioAtual.email || '';
+      document.getElementById('perfil-telefone').value = usuarioAtual.telefone || 'Não informado';
+      document.getElementById('perfil-cidade').value = usuarioAtual.cidade || 'Não informada';
+    }
   }
 }
 
@@ -52,7 +73,7 @@ function trocarSecao(nomeSecao) {
     'rastreamento': 'Rastreamento em Tempo Real',
     'frequencia': 'Frequência Rápida',
     'motorista': 'Chat com Motorista',
-    'configuracoes': 'Configurações'
+    'perfil': 'Meu Perfil'
   };
 
   document.getElementById('page-title').textContent = titles[nomeSecao] || nomeSecao;
@@ -170,11 +191,13 @@ menuItems.forEach(item => {
   });
 });
 
-logoutBtn.addEventListener('click', () => {
+const executeLogout = () => {
   localStorage.removeItem('auth_token');
   localStorage.removeItem('usuario_dados');
-  window.location.href = '/index.html';
-});
+  window.location.href = '/pages/index.html';
+};
+
+logoutBtn.addEventListener('click', executeLogout);
 
 document.addEventListener('DOMContentLoaded', () => {
   carregarDadosUsuario();
@@ -182,4 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
   inicializarPresenca();
   inicializarTogglePresenca();
   inicializarCalendario();
+  
+  const logoutBtnPerfil = document.getElementById('btn-logout-perfil');
+  if (logoutBtnPerfil) {
+    logoutBtnPerfil.addEventListener('click', executeLogout);
+  }
 });

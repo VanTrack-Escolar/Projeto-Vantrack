@@ -1,7 +1,7 @@
 const CONFIG = {
     API_URL: 'http://localhost:5000/api',
-    TOKEN_KEY: 'vantrack_token',
-    USER_KEY: 'vantrack_user',
+    TOKEN_KEY: 'auth_token',
+    USER_KEY: 'usuario_dados',
     ENDPOINTS: {
         LOGIN: '/login',
         CADASTRO: '/cadastro'
@@ -21,7 +21,7 @@ async function fetchAPI(method, endpoint, data = null) {
     const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } };
     if (data && (method === 'POST' || method === 'PUT')) options.body = JSON.stringify(data);
     const res = await fetch(`${CONFIG.API_URL}${endpoint}`, options);
-    if (res.status === 401) {
+    if (res.status === 401 && endpoint !== CONFIG.ENDPOINTS.LOGIN) {
         handleSessionExpired();
         return null;
     }

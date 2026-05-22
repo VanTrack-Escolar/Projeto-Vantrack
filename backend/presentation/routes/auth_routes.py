@@ -104,31 +104,13 @@ def login():
         
         resultado = autenticar_use_case.executar(usuario_login.email, usuario_login.senha)
         
-        # IMPLEMENTAÇÃO DO 2FA (Passo 3)
-        user_agent = request.headers.get('User-Agent', 'unknown')
-        ip_address = request.remote_addr
-        dispositivo_hash = hashlib.sha256(f"{user_agent}:{ip_address}".encode()).hexdigest()
-        
-        dois_fatores_repo = Dois_FatoresRepository(current_app.db)
-        
-        # Gerar código OTP para envio por EMAIL
-        gerar_2fa = GenerarCodigoVerificacao2FA(usuario_repo, dois_fatores_repo)
-        codigo_info = gerar_2fa.executar(resultado['usuario']['id'], dispositivo_hash, 'EMAIL')
-        
-        # Enviar o código (Simulado no terminal ou via SMTP)
-        enviar_2fa = EnviarCodigoVerificacao2FA(dois_fatores_repo)
-        enviar_2fa.executar(codigo_info['dois_fatores_id'])
-        
-        # Retorna o temp_token em vez do JWT final (usamos o JWT como token temporário restrito por sessão no frontend)
+        # IMPLEMENTAÇÃO DO 2FA (TEMPORARIAMENTE DESATIVADO PARA TESTES)
+        # Ao logar, o usuário vai direto para a próxima tela sem passar pelo 2FA
         return jsonify({
-            'requer_2fa': True,
-            'dois_fatores_id': codigo_info['dois_fatores_id'],
-            'usuario_id': resultado['usuario']['id'],
-            'metodo': 'EMAIL',
-            'email_mascarado': codigo_info['email_mascarado'],
-            'temp_token': resultado['token'],
+            'requer_2fa': False,
+            'token': resultado['token'],
             'usuario': resultado['usuario']
-        }), 206
+        }), 200
     
     except VantrackException as e:
         return jsonify({'erro': str(e)}), 401

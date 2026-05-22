@@ -35,6 +35,9 @@ class AutenticarUsuario:
                 'id': usuario['id'],
                 'email': usuario['email'],
                 'nome': usuario['nome'],
+                'sobrenome': usuario.get('sobrenome', ''),
+                'telefone': usuario.get('telefone', ''),
+                'cidade': usuario.get('cidade', ''),
                 'tipo_perfil': usuario['tipo_perfil']
             }
         }
@@ -63,12 +66,23 @@ class CadastrarUsuario:
             senha_hash = hashlib.sha256(dados.senha.encode('utf-8')).hexdigest()
             print(f"[USE-CASE] ✓ Senha hasheada")
             
+            # Tratar caso o sobrenome venha vazio (frontend envia nome e sobrenome juntos no campo 'nome')
+            nome_completo = dados.nome.strip()
+            partes = nome_completo.split(" ", 1)
+            nome_final = partes[0]
+            sobrenome_final = partes[1] if len(partes) > 1 else ""
+            
+            if dados.sobrenome:
+                nome_final = dados.nome
+                sobrenome_final = dados.sobrenome
+
             # Criar objeto Usuario
             print(f"[USE-CASE] Criando objeto Usuario...")
             usuario = Usuario(
                 email=dados.email,
                 cpf=dados.cpf,
-                nome=dados.nome,
+                nome=nome_final,
+                sobrenome=sobrenome_final,
                 telefone=dados.telefone,
                 cidade=dados.cidade,
                 tipo_perfil=dados.tipo_perfil,

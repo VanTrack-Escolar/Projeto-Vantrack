@@ -21,11 +21,11 @@ class RotaRepository:
         return self.db.execute_query_one(query, (rota_id,))
 
     def listar_por_motorista(self, motorista_id):
-        query = "SELECT * FROM rotas WHERE motorista_id = %s AND ativa = TRUE"
+        query = "SELECT * FROM rotas WHERE motorista_id = %s AND ativo = TRUE"
         return self.db.execute_query(query, (motorista_id,), fetch=True)
 
     def listar_ativas(self):
-        query = "SELECT * FROM rotas WHERE ativa = TRUE"
+        query = "SELECT * FROM rotas WHERE ativo = TRUE"
         return self.db.execute_query(query, fetch=True)
 
     def listar_todas(self):
@@ -52,11 +52,11 @@ class RotaRepository:
         return rota_atualizada
 
     def deletar(self, rota_id):
-        query = "UPDATE rotas SET ativa = FALSE, atualizado_em = NOW() WHERE id = %s"
+        query = "UPDATE rotas SET ativo = FALSE, atualizado_em = NOW() WHERE id = %s"
         self.db.execute_query(query, (rota_id,))
 
     def desativar(self, rota_id):
-        query = "UPDATE rotas SET ativa = FALSE WHERE id = %s"
+        query = "UPDATE rotas SET ativo = FALSE WHERE id = %s"
         self.db.execute_query(query, (rota_id,))
         
         # Buscar a rota atualizada

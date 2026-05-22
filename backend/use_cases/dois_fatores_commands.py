@@ -1,4 +1,4 @@
-from exceptions import VantrackException, PermissaoNegada
+from exceptions import VantrackException, PermissaoNegada, UsuarioNaoEncontrado
 from datetime import datetime
 import hashlib
 from twilio.rest import Client
@@ -30,7 +30,7 @@ class GenerarCodigoVerificacao2FA:
         # Validar usuário
         usuario = self.usuario_repository.buscar_por_id(usuario_id)
         if not usuario:
-            raise UsuarioNaoAutorizado("Usuário não encontrado")
+            raise UsuarioNaoEncontrado("Usuário não encontrado")
 
         # Limpar códigos expirados anteriores
         self.dois_fatores_repository.limpar_expirados(usuario_id)
@@ -40,8 +40,8 @@ class GenerarCodigoVerificacao2FA:
             usuario_id=usuario_id,
             dispositivo_hash=dispositivo_hash,
             metodo=metodo,
-            telefone_sms=telefone_sms or (usuario.telefone if metodo == 'SMS' else None),
-            email_envio=email_envio or (usuario.email if metodo == 'EMAIL' else None)
+            telefone_sms=telefone_sms or (usuario['telefone'] if metodo == 'SMS' else None),
+            email_envio=email_envio or (usuario['email'] if metodo == 'EMAIL' else None)
         )
 
         return {
@@ -136,10 +136,12 @@ class EnviarCodigoVerificacao2FA:
     def _enviar_email(self, email, codigo):
         """Envia código via Email (SMTP) e loga no terminal"""
         print(f"\n[2FA DEBUG] 🔐 CÓDIGO OTP GERADO PARA {email}: {codigo} 🔐\n")
-        
         try:
-            if not all([self.smtp_server, self.smtp_user, self.smtp_password]):
-                print("[2FA DEBUG] Credenciais SMTP ausentes no .env. Simulando envio apenas pelo terminal.")
+            # Se credenciais forem ausentes ou as padrão do .env, simulamos apenas pelo terminal
+            if (not all([self.smtp_server, self.smtp_user, self.smtp_password]) or 
+                "your_email@gmail.com" in self.smtp_user or 
+                "your_app_password_here" in self.smtp_password):
+                print("[2FA DEBUG] Credenciais SMTP ausentes ou padrão no .env. Simulando envio apenas pelo terminal.")
                 return True # Retorna sucesso para permitir o avanço mesmo sem SMTP real
 
             msg = MIMEMultipart()

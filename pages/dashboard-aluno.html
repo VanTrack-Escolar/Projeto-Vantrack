@@ -31,9 +31,9 @@
           <i class="fas fa-comments"></i>
           <span>Chat Motorista</span>
         </a>
-        <a href="#configuracoes" class="menu-item" data-menu="configuracoes">
-          <i class="fas fa-cog"></i>
-          <span>Configurações</span>
+        <a href="#perfil" class="menu-item" data-menu="perfil">
+          <i class="fas fa-user-circle"></i>
+          <span>Perfil</span>
         </a>
       </nav>
 
@@ -213,9 +213,9 @@
           </div>
         </section>
 
-        <section id="configuracoes-section" class="dashboard-section">
+        <section id="perfil-section" class="dashboard-section">
           <div class="section-header">
-            <h1>Configurações</h1>
+            <h1>Meu Perfil</h1>
             <p>Gerencie suas informações e preferências</p>
           </div>
 
@@ -267,20 +267,42 @@
               </div>
             </div>
 
-            <div class="card config-card">
-              <div class="card-header">
-                <i class="fas fa-user"></i>
-                <h3>Perfil</h3>
+            <div class="card perfil-card" style="grid-column: span 3; width: 100%; max-width: 900px; margin: 20px auto 0 auto; padding: 40px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); border-radius: 16px; background: white; border: 1px solid #e5e7eb;">
+              <div class="card-header" style="display: flex; align-items: center; gap: 18px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+                <div style="background: #e0f2fe; color: #0284c7; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                  <i class="fas fa-user-graduate"></i>
+                </div>
+                <div>
+                  <h3 id="perfil-nome-titulo" style="margin: 0; font-size: 22px; font-weight: 600; color: #111827;">Aluno</h3>
+                  <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">Estudante Inscrito</p>
+                </div>
               </div>
-              <div class="card-body">
-                <div class="config-item">
-                  <label>Nome:</label>
-                  <p id="config-nome">João Silva</p>
+              <div class="card-body" style="padding: 30px 0;">
+                <div class="perfil-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                  <div>
+                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">Nome Completo</label>
+                    <input type="text" id="perfil-nome" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
+                  </div>
+                  <div>
+                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">E-mail</label>
+                    <input type="email" id="perfil-email" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
+                  </div>
+                  <div>
+                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">Telefone</label>
+                    <input type="text" id="perfil-telefone" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
+                  </div>
+                  <div>
+                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">Cidade</label>
+                    <input type="text" id="perfil-cidade" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
+                  </div>
                 </div>
-                <div class="config-item">
-                  <label>Email:</label>
-                  <p id="config-email">joao@email.com</p>
-                </div>
+              </div>
+              <div class="card-footer" style="border-top: 1px solid #eee; padding-top: 25px; display: flex; justify-content: space-between; align-items: center; gap: 30px; flex-wrap: wrap;">
+                <button class="btn btn-secondary-small" id="btn-editar-perfil" onclick="alert('Funcionalidade de edição em desenvolvimento.')" style="background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 15px; transition: all 0.2s;">Editar Dados</button>
+                <button class="btn-logout" id="btn-logout-perfil" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 15px; transition: all 0.2s;">
+                  <i class="fas fa-sign-out-alt"></i>
+                  <span>Sair da Conta</span>
+                </button>
               </div>
             </div>
           </div>
@@ -293,10 +315,10 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/config.js?v=1.1"></script>
   <script src="../assets/js/validators.js"></script>
   <script src="../assets/js/realtime-rastreamento.js"></script>
   <script src="../assets/js/realtime-chat-aluno.js"></script>
-  <script src="../assets/js/dashboard-aluno.js"></script>
+  <script src="../assets/js/dashboard-aluno.js?v=1.2"></script>
 </body>
 </html>

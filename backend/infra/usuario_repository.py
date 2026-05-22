@@ -9,10 +9,10 @@ class UsuarioRepository:
         usuario_id = str(uuid4())
         
         query = """
-            INSERT INTO usuarios (id, email, cpf, nome, telefone, cidade, tipo_perfil, senha_hash, ativo, criado_em)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            INSERT INTO usuarios (id, email, cpf, nome, sobrenome, telefone, cidade, tipo_perfil, senha_hash, ativo, criado_em)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
         """
-        params = (usuario_id, usuario.email, usuario.cpf, usuario.nome, usuario.telefone, 
+        params = (usuario_id, usuario.email, usuario.cpf, usuario.nome, usuario.sobrenome, usuario.telefone, 
                   usuario.cidade, usuario.tipo_perfil, usuario.senha_hash, True)
         
         try:

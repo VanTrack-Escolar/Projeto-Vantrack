@@ -137,6 +137,27 @@ async function verificarCodigo() {
       // Salvar JWT final
       setToken(resultado.token);
       
+      // Decodificar JWT como fallback para obter dados do usuário caso dados2FA seja nulo/incompleto
+      let usuario = dados2FA ? dados2FA.usuario_dados : null;
+      if (!usuario) {
+        try {
+          const payload = JSON.parse(atob(resultado.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+          usuario = {
+            id: payload.usuario_id,
+            email: payload.email,
+            tipo_perfil: payload.tipo_perfil,
+            nome: payload.email ? payload.email.split('@')[0] : 'Usuário'
+          };
+          console.log('[2FA] Recuperados dados do usuário via token JWT:', usuario);
+        } catch (e) {
+          console.error('[2FA] Erro ao recuperar dados do token:', e);
+        }
+      }
+      
+      if (usuario) {
+        setUser(usuario);
+      }
+      
       // Limpar sessão temporária
       sessionStorage.removeItem('dados_2fa');
 
@@ -144,7 +165,7 @@ async function verificarCodigo() {
 
       setTimeout(() => {
           // Redirecionar para dashboard
-          const perfil = dados2FA.usuario_dados.tipo_perfil;
+          const perfil = usuario ? usuario.tipo_perfil : 'aluno';
           if (perfil === 'motorista') {
             window.location.href = '/pages/dashboard-motorista.html';
           } else {
