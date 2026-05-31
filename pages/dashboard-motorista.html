@@ -12,9 +12,10 @@
 <body>
   <div class="dashboard-container">
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <i class="fas fa-user-circle"></i>
-        <h3 id="motorista-nome">Motorista</h3>
+      <div class="sidebar-header" style="display: flex; align-items: center; gap: 12px; padding: 20px 15px; border-bottom: 1px solid #e9ecef;">
+        <img id="sidebar-avatar" src="../assets/img/motorista.png" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;" />
+        <i class="fas fa-user-circle" id="sidebar-avatar-icon" style="font-size: 40px; color: var(--primary-blue);"></i>
+        <h3 id="motorista-nome" style="font-size: 1.1rem; font-weight: 700; color: var(--bg-dark); margin: 0;">Motorista</h3>
       </div>
 
       <nav class="sidebar-menu">
@@ -251,14 +252,44 @@
         <section id="perfil-section" class="dashboard-section">
           <div class="section-header">
             <h1>Meu Perfil</h1>
-            <p>Gerencie suas informações pessoais</p>
+            <p>Gerencie suas informações pessoais e de segurança</p>
+          </div>
+
+          <div class="cards-grid config-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 0 auto 20px auto; width: 100%;">
+            <div class="card config-card" style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); border: 1px solid #e5e7eb;">
+              <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
+                <i class="fas fa-lock" style="color: var(--primary-blue); font-size: 18px;"></i>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">Segurança</h3>
+              </div>
+              <div class="card-body">
+                <div class="config-item">
+                  <button class="btn-small btn-seguranca" id="btn-alterar-senha" style="background: var(--primary-blue); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">Alterar Senha</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card config-card" style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); border: 1px solid #e5e7eb;">
+              <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
+                <i class="fas fa-bus" style="color: var(--primary-blue); font-size: 18px;"></i>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">Dados da Van</h3>
+              </div>
+              <div class="card-body" style="font-size: 14px; display: flex; flex-direction: column; gap: 8px; color: #4b5563;">
+                <div><span style="font-weight: 600; color: #111827;">Placa:</span> <span id="info-veiculo-placa">Carregando...</span></div>
+                <div><span style="font-weight: 600; color: #111827;">Capacidade:</span> <span id="info-veiculo-capacidade">Carregando...</span></div>
+              </div>
+            </div>
           </div>
 
           <div class="cards-grid" style="display: flex; justify-content: center; width: 100%;">
             <div class="card perfil-card" style="max-width: 900px; width: 100%; padding: 40px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); border-radius: 16px; background: white; border: 1px solid #e5e7eb;">
               <div class="card-header" style="display: flex; align-items: center; gap: 18px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
-                <div style="background: #e0f2fe; color: #0284c7; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px;">
-                  <i class="fas fa-user-tie"></i>
+                <!-- Uploader Interativo de Foto de Perfil -->
+                <div class="avatar-uploader" style="position: relative; width: 70px; height: 70px; cursor: pointer;" id="avatar-uploader-container" title="Clique para alterar sua foto de perfil">
+                    <img id="perfil-foto-preview" src="../assets/img/motorista.png" alt="Foto de Perfil" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-blue);" />
+                    <div style="position: absolute; bottom: 0; right: 0; background: var(--primary-blue); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <input type="file" id="perfil-foto-upload" style="display: none;" accept="image/*" />
                 </div>
                 <div>
                   <h3 id="perfil-nome-titulo" style="margin: 0; font-size: 22px; font-weight: 600; color: #111827;">Motorista</h3>
@@ -286,7 +317,7 @@
                 </div>
               </div>
               <div class="card-footer" style="border-top: 1px solid #eee; padding-top: 25px; display: flex; justify-content: space-between; align-items: center; gap: 30px; flex-wrap: wrap;">
-                <button class="btn btn-secondary-small" id="btn-editar-perfil" onclick="alert('Funcionalidade de edição em desenvolvimento.')" style="background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 15px; transition: all 0.2s;">Editar Dados</button>
+                <button class="btn btn-secondary-small" id="btn-editar-perfil" style="background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 15px; transition: all 0.2s;">Editar Dados</button>
                 <button class="btn-logout" id="btn-logout-perfil" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 15px; transition: all 0.2s;">
                   <i class="fas fa-sign-out-alt"></i>
                   <span>Sair da Conta</span>

@@ -131,7 +131,7 @@ class ChatSocket:
                     mensagem = MensagemChat.criar(remetente_id, destinatario_id, texto)
                     resultado = mensagem_repo.criar(mensagem)
                 
-                room = f'chat_{remetente_id}_{destinatario_id}'
+                room = f'chat_{min(remetente_id, destinatario_id)}_{max(remetente_id, destinatario_id)}'
                 socketio.emit('nova_mensagem', {
                     'id': resultado['id'],
                     'remetente_id': remetente_id,

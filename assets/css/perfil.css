@@ -1,10 +1,12 @@
 body {
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-color: var(--bg-light);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
+  overflow-x: hidden;
 }
 
 .tela-escolha {
@@ -13,12 +15,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: escolhaFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes escolhaFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .conteudo-escolha {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  max-width: 480px;
 }
 
 .texto-escolha {
@@ -27,49 +43,62 @@ body {
 }
 
 .texto-escolha h1 {
-  font-size: 1.8rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 6px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--bg-dark);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
 }
 
 .texto-escolha p {
   font-size: 0.95rem;
   color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .cards-perfil {
   display: flex;
-  gap: 16px;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
 }
 
 .card-perfil {
-  width: 150px;
+  width: 180px;
   background-color: var(--white);
-  border-radius: 18px;
-  padding: 16px 12px 14px;
-  box-shadow: var(--shadow-lg);
   border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 24px 16px;
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: var(--transition-smooth);
 }
 
 .card-perfil:hover {
   transform: translateY(-4px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-blue);
 }
 
 .icone-perfil {
   width: 90px;
   height: 90px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  background-color: var(--bg-light);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 10px;
+  transition: var(--transition-smooth);
+}
+
+.card-perfil:hover .icone-perfil {
+  background-color: var(--bg-lighter);
 }
 
 .icone-perfil img {
@@ -79,17 +108,26 @@ body {
 }
 
 .nome-perfil {
-  font-size: 1.05rem;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+
+.card-perfil:hover .nome-perfil {
+  color: var(--primary-blue-dark);
 }
 
 @media (max-width: 480px) {
   .cards-perfil {
     flex-direction: column;
+    align-items: center;
+    gap: 16px;
   }
 
   .card-perfil {
-    width: 180px;
+    width: 200px;
   }
 }
+
+

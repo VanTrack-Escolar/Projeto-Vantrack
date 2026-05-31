@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
+from typing import Union
 
 class Veiculo(BaseModel):
     id: int = None
@@ -7,7 +8,7 @@ class Veiculo(BaseModel):
     modelo: str
     ano: int
     capacidade: int
-    motorista_id: int
+    motorista_id: Union[int, str]
     criado_em: datetime = None
     atualizado_em: datetime = None
 
@@ -31,4 +32,4 @@ class VeiculoCreate(BaseModel):
     modelo: str
     ano: int
     capacidade: int
-    motorista_id: int
+    motorista_id: Union[int, str]

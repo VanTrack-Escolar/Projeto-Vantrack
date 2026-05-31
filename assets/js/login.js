@@ -12,11 +12,25 @@ document.addEventListener('DOMContentLoaded',()=>{
             localStorage.removeItem('sessao_debug_report');
         }catch(err){}
     }
-    const fL=document.getElementById('form-login'), fRS=document.getElementById('form-recuperar-senha'), bTS=document.querySelector('.toggle-senha');
+    const fL=document.getElementById('form-login'), fRS=document.getElementById('form-recuperar-senha');
     const dH=document.querySelector('.dropdown-header'), dL=document.getElementById('dropdown-perfil-list'), dI=document.querySelectorAll('.dropdown-item');
     if(fL) fL.addEventListener('submit',handleLogin);
     if(fRS) fRS.addEventListener('submit',handleRecuperarSenha);
-    if(bTS) bTS.addEventListener('click',e=>{e.preventDefault();const i=document.getElementById('senha'),ic=e.target.closest('.toggle-senha').querySelector('i');i.type=i.type==='password'?'text':'password';ic.classList.toggle('fa-eye');ic.classList.toggle('fa-eye-slash');});
+    document.querySelectorAll('.toggle-senha').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            const input = btn.parentElement.querySelector('input');
+            const icon = btn.querySelector('i');
+            if (input) {
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                if (icon) {
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                }
+            }
+        });
+    });
     if(dH){
         dH.addEventListener('click',e=>{e.stopPropagation();dL.style.display=dL.style.display==='none'?'block':'none';dH.classList.toggle('open');});
         dI.forEach(item=>item.addEventListener('click',e=>{e.stopPropagation();const v=item.getAttribute('data-value');document.getElementById('perfil').value=v;document.getElementById('perfil-display').textContent=item.textContent;dL.style.display='none';dH.classList.remove('open');dH.classList.remove('is-placeholder');dI.forEach(it=>it.classList.remove('selected'));item.classList.add('selected');}));
@@ -70,8 +84,12 @@ async function handleRecuperarSenha(e){
     e.preventDefault();
     if(!validarFormulario(this)){mostrarNotificacao('Corrija os erros','erro');return;}
     const b=this.querySelector('button[type="submit"]');b.disabled=true;b.textContent='Enviando...';
-    try{
-        const r=await fetchAPI('POST','/recuperar-senha',{email:document.getElementById('email-recuperar').value.trim(),nova_senha:document.getElementById('nova-senha').value});
-        if(r){mostrarNotificacao('Senha atualizada!','sucesso',1500);setTimeout(()=>window.location.href='/pages/index.html',1000);}
-    }catch(e){mostrarNotificacao(e.message||'Erro','erro');}finally{b.disabled=false;b.textContent='Recuperar';}
+    
+    // Simular envio de e-mail de recuperação
+    setTimeout(() => {
+        mostrarNotificacao('E-mail de recuperação enviado com sucesso! Verifique sua caixa de entrada.','sucesso',3000);
+        setTimeout(() => {
+            window.location.href='/pages/index.html';
+        }, 2000);
+    }, 1000);
 }

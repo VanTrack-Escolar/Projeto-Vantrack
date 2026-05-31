@@ -1,28 +1,11 @@
-/* Reset básico */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    --fundo-pagina: #e6f4ff;
-    --fundo-card: #ffffff;
-    --texto-principal: #1f2933;
-    --texto-secundario: #6b7280;
-    --sombra-card: 0 10px 26px rgba(0, 0, 0, 0.18);
-    --borda-card: #e0e7ff;
-}
-
-/* Fundo geral */
 body {
-    font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-    background-color: var(--fundo-pagina);
+    font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #1062c0 0%, #063970 100%);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-x: hidden;
 }
 
 /* Container principal */
@@ -33,12 +16,26 @@ body {
     align-items: center;
     justify-content: center;
     padding: 24px 16px;
+    animation: escolhaFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes escolhaFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .conteudo-escolha {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    max-width: 480px;
 }
 
 /* Título e subtítulo */
@@ -48,48 +45,65 @@ body {
 }
 
 .texto-escolha h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #07427b;
-    margin-bottom: 6px;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .texto-escolha p {
     font-size: 0.95rem;
-    color: var(--texto-secundario);
+    color: var(--bg-light);
+    font-weight: 600;
 }
 
 /* Cards dos perfis */
 .cards-perfil {
     display: flex;
-    gap: 16px;
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
 }
 
 /* Cada card */
 .card-perfil {
-    width: 150px;
-    background-color: var(--fundo-card);
-    border-radius: 18px;
-    padding: 16px 12px 14px;
-    box-shadow: var(--sombra-card);
-    border: 1px solid var(--borda-card);
+    width: 180px;
+    background-color: var(--white);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px 16px;
+    box-shadow: var(--shadow-md);
     display: flex;
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: var(--transition-smooth);
 }
 
 .card-perfil:hover {
     transform: translateY(-4px);
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-blue);
 }
 
 /* Ícone dentro do card */
 .icone-perfil {
     width: 90px;
     height: 90px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    background-color: var(--bg-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    transition: var(--transition-smooth);
+}
+
+.card-perfil:hover .icone-perfil {
+    background-color: var(--bg-lighter);
 }
 
 .icone-perfil img {
@@ -100,18 +114,27 @@ body {
 
 /* Nome do perfil (Motorista / Aluno) */
 .nome-perfil {
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: var(--texto-principal);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+}
+
+.card-perfil:hover .nome-perfil {
+    color: var(--primary-blue-dark);
 }
 
 /* Responsivo: em telas bem estreitas, coloca um card embaixo do outro */
 @media (max-width: 480px) {
     .cards-perfil {
         flex-direction: column;
+        align-items: center;
+        gap: 16px;
     }
 
     .card-perfil {
-        width: 180px;
+        width: 200px;
     }
 }
+
+

@@ -1,9 +1,24 @@
 let socketChat;
 
 const ChatRealtime = {
+  motoristaId: null,
+
   inicializar: () => {
     const token = localStorage.getItem('auth_token');
-    const usuarioID = localStorage.getItem('usuario_id');
+    let usuarioID = localStorage.getItem('usuario_id');
+
+    if (!usuarioID) {
+      const usuarioJSON = localStorage.getItem('usuario_dados');
+      if (usuarioJSON) {
+        try {
+          const u = JSON.parse(usuarioJSON);
+          if (u && u.id) {
+            usuarioID = u.id;
+            localStorage.setItem('usuario_id', u.id);
+          }
+        } catch (err) {}
+      }
+    }
 
     if (!token || !usuarioID) {
       console.error('Token ou usuário ID não encontrado');
@@ -31,6 +46,7 @@ const ChatRealtime = {
     socketChat.on('erro_chat', ChatRealtime.onErro);
 
     ChatRealtime.setupEventos();
+    ChatRealtime.obterDadosMotorista();
   },
 
   onConectado: () => {
@@ -91,17 +107,62 @@ const ChatRealtime = {
     }
   },
 
+  obterDadosMotorista: async () => {
+    try {
+      const res = await fetchAPI('GET', '/dashboard/aluno');
+      if (res && res.motorista) {
+        const motorista = res.motorista;
+        ChatRealtime.motoristaId = motorista.id;
+        
+        // Atualizar nomes na interface
+        const nomeChat = document.getElementById('motorista-nome-chat');
+        if (nomeChat) nomeChat.textContent = motorista.nome;
+        
+        const nomeStatus = document.getElementById('motorista-nome-status');
+        if (nomeStatus) nomeStatus.textContent = motorista.nome;
+        
+        // Inscrever na conversa em tempo real
+        ChatRealtime.inscreverConversa(motorista.id);
+        
+        // Carregar histórico
+        ChatRealtime.carregarHistorico(motorista.id);
+      }
+    } catch (e) {
+      console.error('Erro ao obter dados do motorista para o chat:', e);
+    }
+  },
+
+  carregarHistorico: async (motoristaId) => {
+    try {
+      const res = await fetchAPI('GET', `/dashboard/mensagens/${motoristaId}`);
+      if (res && res.mensagens) {
+        const container = document.getElementById('chat-messages-motorista');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        const usuarioID = localStorage.getItem('usuario_id');
+        res.mensagens.forEach(msg => {
+          const classe = msg.remetente_id === usuarioID ? 'mensagem-enviada' : 'mensagem-recebida';
+          const hora = new Date(msg.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          
+          const div = document.createElement('div');
+          div.className = classe;
+          div.innerHTML = `<p>${msg.texto}</p><span class="hora">${hora}</span>`;
+          container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+      }
+    } catch (e) {
+      console.error('Erro ao carregar histórico:', e);
+    }
+  },
+
   enviarMensagem: () => {
     const inputMensagem = document.getElementById('chat-input-motorista');
-    const usuarioJSON = localStorage.getItem('usuario_dados');
-
-    if (!inputMensagem || !inputMensagem.value.trim() || !usuarioJSON) return;
-
-    const usuario = JSON.parse(usuarioJSON);
-    const destinatarioID = usuario.motorista_id || 'motorista_default';
+    if (!inputMensagem || !inputMensagem.value.trim() || !ChatRealtime.motoristaId) return;
 
     socketChat.emit('enviar_mensagem', {
-      destinatario_id: destinatarioID,
+      destinatario_id: ChatRealtime.motoristaId,
       texto: inputMensagem.value.trim()
     });
 

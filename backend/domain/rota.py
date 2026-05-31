@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, validator
+from typing import Union
 
 class Rota(BaseModel):
     id: int = None
@@ -8,8 +9,8 @@ class Rota(BaseModel):
     destino: str
     horario_partida: str
     capacidade_maxima: int
-    motorista_id: int
-    veiculo_id: int
+    motorista_id: Union[int, str]
+    veiculo_id: Union[int, str]
     ativa: bool = True
     criado_em: datetime = None
     atualizado_em: datetime = None
@@ -49,8 +50,8 @@ class RotaCreate(BaseModel):
     destino: str
     horario_partida: str
     capacidade_maxima: int
-    motorista_id: int
-    veiculo_id: int
+    motorista_id: Union[int, str]
+    veiculo_id: Union[int, str]
 
     @validator('horario_partida')
     def validar_horario(cls, v):
