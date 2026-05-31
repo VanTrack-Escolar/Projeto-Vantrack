@@ -367,6 +367,12 @@ function inicializarPerfil() {
     btnAlterarSenha.addEventListener('click', abrirModalAlterarSenha);
   }
 
+  // 5. Editar Endereço
+  const btnEditarEndereco = document.getElementById('btn-editar-endereco');
+  if (btnEditarEndereco) {
+    btnEditarEndereco.addEventListener('click', abrirModalEditarEndereco);
+  }
+
   function abrirModalAlterarSenha() {
     const modalAntigo = document.getElementById('modal-alterar-senha');
     if (modalAntigo) modalAntigo.remove();
@@ -456,10 +462,158 @@ function inicializarPerfil() {
       }
     });
   }
+
+  function abrirModalEditarEndereco() {
+    const modalAntigo = document.getElementById('modal-editar-endereco');
+    if (modalAntigo) modalAntigo.remove();
+
+    const coletaAtual = document.getElementById('endereco-coleta-atual').textContent;
+    const entregaAtual = document.getElementById('endereco-entrega-atual').textContent;
+    
+    const coletaValor = (coletaAtual === 'Carregando...' || coletaAtual === 'Não informado' || coletaAtual === 'Erro ao carregar') ? '' : coletaAtual;
+    const entregaValor = (entregaAtual === 'Carregando...' || entregaAtual === 'Não informado' || entregaAtual === 'Erro ao carregar') ? '' : entregaAtual;
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-editar-endereco';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(15, 23, 42, 0.4)'; 
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '1000';
+    modal.style.backdropFilter = 'blur(8px)';
+    modal.style.transition = 'all 0.3s ease';
+
+    modal.innerHTML = `
+      <div style="background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 32px; width: 90%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid rgba(229, 231, 235, 0.8); position: relative;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+          <div style="background: #e0f2fe; color: var(--primary-blue); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            <i class="fas fa-map-marked-alt"></i>
+          </div>
+          <h3 style="margin: 0; font-size: 1.3rem; font-weight: 700; color: #1e293b;">Editar Endereços da Rota</h3>
+        </div>
+        <p style="margin: 0 0 24px 0; font-size: 0.9rem; color: #64748b; line-height: 1.5;">Atualize o seu endereço de coleta e entrega para a rota de van.</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 28px;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px;">Endereço de Coleta (Ida)</label>
+            <input type="text" id="input-endereco-coleta" placeholder="Ex: Rua das Flores, 123 - Centro" value="${coletaValor}" style="width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; outline: none; transition: all 0.2s; font-family: inherit; box-sizing: border-box;" />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px;">Endereço de Entrega (Volta)</label>
+            <input type="text" id="input-endereco-entrega" placeholder="Ex: Rua das Palmeiras, 456 - Bairro Novo" value="${entregaValor}" style="width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; outline: none; transition: all 0.2s; font-family: inherit; box-sizing: border-box;" />
+          </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button id="btn-cancelar-endereco" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 12px 20px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">Cancelar</button>
+          <button id="btn-salvar-endereco" style="background: var(--primary-blue); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; gap: 8px;">
+            <span>Salvar Endereços</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const inputColeta = document.getElementById('input-endereco-coleta');
+    const inputEntrega = document.getElementById('input-endereco-entrega');
+    
+    [inputColeta, inputEntrega].forEach(input => {
+      input.addEventListener('focus', () => {
+        input.style.borderColor = 'var(--primary-blue)';
+        input.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.15)';
+      });
+      input.addEventListener('blur', () => {
+        input.style.borderColor = '#cbd5e1';
+        input.style.boxShadow = 'none';
+      });
+    });
+
+    if (inputColeta) inputColeta.focus();
+
+    document.getElementById('btn-cancelar-endereco').addEventListener('click', () => {
+      modal.remove();
+    });
+
+    document.getElementById('btn-salvar-endereco').addEventListener('click', async () => {
+      const coleta = inputColeta.value.trim();
+      const entrega = inputEntrega.value.trim();
+
+      if (!coleta || coleta.length < 5) {
+        inputColeta.style.borderColor = '#ef4444';
+        inputColeta.focus();
+        mostrarNotificacao('O endereço de coleta deve conter no mínimo 5 caracteres.', 'erro');
+        return;
+      }
+
+      if (!entrega || entrega.length < 5) {
+        inputEntrega.style.borderColor = '#ef4444';
+        inputEntrega.focus();
+        mostrarNotificacao('O endereço de entrega deve conter no mínimo 5 caracteres.', 'erro');
+        return;
+      }
+
+      const btnSalvar = document.getElementById('btn-salvar-endereco');
+      btnSalvar.disabled = true;
+      btnSalvar.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Salvando...</span>`;
+
+      try {
+        const r = await fetchAPI('POST', '/dashboard/endereco', {
+          endereco_coleta: coleta,
+          endereco_entrega: entrega
+        });
+
+        if (r) {
+          mostrarNotificacao('Endereços atualizados com sucesso!', 'sucesso');
+          document.getElementById('endereco-coleta-atual').textContent = coleta;
+          document.getElementById('endereco-entrega-atual').textContent = entrega;
+          
+          usuarioAtual.endereco_coleta = coleta;
+          usuarioAtual.endereco_entrega = entrega;
+          localStorage.setItem('usuario_dados', JSON.stringify(usuarioAtual));
+          
+          modal.remove();
+        }
+      } catch (err) {
+        mostrarNotificacao(err.message || 'Erro ao atualizar endereço.', 'erro');
+      } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = `<span>Salvar Endereços</span>`;
+      }
+    });
+  }
+}
+
+async function carregarEnderecoAluno() {
+  try {
+    const res = await fetchAPI('GET', '/dashboard/aluno');
+    if (res && res.endereco_principal) {
+      const ep = res.endereco_principal;
+      document.getElementById('endereco-coleta-atual').textContent = ep.endereco_coleta || 'Não informado';
+      document.getElementById('endereco-entrega-atual').textContent = ep.endereco_entrega || 'Não informado';
+      
+      usuarioAtual.endereco_coleta = ep.endereco_coleta;
+      usuarioAtual.endereco_entrega = ep.endereco_entrega;
+      localStorage.setItem('usuario_dados', JSON.stringify(usuarioAtual));
+    } else {
+      document.getElementById('endereco-coleta-atual').textContent = 'Não informado';
+      document.getElementById('endereco-entrega-atual').textContent = 'Não informado';
+    }
+  } catch (e) {
+    console.error('Erro ao carregar endereços do aluno:', e);
+    document.getElementById('endereco-coleta-atual').textContent = 'Erro ao carregar';
+    document.getElementById('endereco-entrega-atual').textContent = 'Erro ao carregar';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   carregarDadosUsuario();
+  carregarEnderecoAluno();
   trocarSecao('rastreamento');
   inicializarPresenca();
   inicializarTogglePresenca();

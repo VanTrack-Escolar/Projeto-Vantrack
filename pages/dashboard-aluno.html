@@ -221,17 +221,21 @@
           </div>
 
           <div class="cards-grid config-grid">
-            <div class="card config-card">
+            <div class="card config-card" style="grid-column: span 1;">
               <div class="card-header">
                 <i class="fas fa-map-pin"></i>
-                <h3>Endereço de Coleta</h3>
+                <h3>Endereços da Rota</h3>
               </div>
-              <div class="card-body">
-                <div class="config-item">
-                  <label>Endereço Principal:</label>
-                  <p id="endereco-coleta-atual">Rua A, 123 - São Paulo, SP</p>
-                  <button class="btn-small btn-editar">Editar Endereço</button>
+              <div class="card-body" style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="config-item" style="margin-bottom: 0;">
+                  <label style="font-weight: 700; color: var(--color-text-primary); font-size: 0.9rem;">Endereço de Coleta (Ida):</label>
+                  <p id="endereco-coleta-atual" style="margin: 4px 0 0 0; color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600;">Carregando...</p>
                 </div>
+                <div class="config-item" style="margin-bottom: 0;">
+                  <label style="font-weight: 700; color: var(--color-text-primary); font-size: 0.9rem;">Endereço de Entrega (Volta):</label>
+                  <p id="endereco-entrega-atual" style="margin: 4px 0 0 0; color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600;">Carregando...</p>
+                </div>
+                <button class="btn-small btn-editar" id="btn-editar-endereco" style="margin-top: 8px;">Editar Endereços</button>
               </div>
             </div>
 

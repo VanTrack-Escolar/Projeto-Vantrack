@@ -5,20 +5,19 @@ class EnderecoRepository:
     def criar(self, endereco):
         query = """
             INSERT INTO enderecos 
-            (aluno_id, rota_id, endereco_coleta, endereco_entrega, 
+            (id, aluno_id, rota_id, endereco_coleta, endereco_entrega, 
              latitude_coleta, longitude_coleta, latitude_entrega, longitude_entrega, principal, criado_em)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
         """
         params = (
-            endereco.aluno_id, endereco.rota_id, endereco.endereco_coleta, endereco.endereco_entrega,
+            endereco.id, endereco.aluno_id, endereco.rota_id, endereco.endereco_coleta, endereco.endereco_entrega,
             endereco.latitude_coleta, endereco.longitude_coleta, endereco.latitude_entrega, 
             endereco.longitude_entrega, endereco.principal
         )
         self.db.execute_query(query, params)
         
-        # Buscar o endereço criado pelo último ID inserido
-        last_id = self.db.get_last_insert_id()
-        endereco_criado = self.buscar_por_id(last_id)
+        # Buscar o endereço criado pelo ID do UUID correspondente
+        endereco_criado = self.buscar_por_id(endereco.id)
         return endereco_criado
 
     def buscar_por_id(self, endereco_id):
