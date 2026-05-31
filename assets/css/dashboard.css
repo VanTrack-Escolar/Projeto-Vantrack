@@ -1416,6 +1416,26 @@ body {
   .cards-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Simulated Mobile Layout Adjustments */
+  .perfil-card {
+    grid-column: span 1 !important;
+    padding: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .perfil-info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .config-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 
