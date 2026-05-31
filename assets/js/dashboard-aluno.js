@@ -611,6 +611,33 @@ async function carregarEnderecoAluno() {
   }
 }
 
+function inicializarMenuMobile() {
+  const mobileToggle = document.getElementById('mobile-menu-toggle');
+  const mobileClose = document.getElementById('mobile-sidebar-close');
+  const sidebar = document.querySelector('.sidebar');
+
+  if (mobileToggle && sidebar) {
+    mobileToggle.addEventListener('click', () => {
+      sidebar.classList.add('active');
+    });
+  }
+
+  if (mobileClose && sidebar) {
+    mobileClose.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+    });
+  }
+
+  const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+  menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth <= 768 && sidebar) {
+        sidebar.classList.remove('active');
+      }
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   carregarDadosUsuario();
   carregarEnderecoAluno();
@@ -619,6 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inicializarTogglePresenca();
   inicializarCalendario();
   inicializarPerfil();
+  inicializarMenuMobile();
   
   const logoutBtnPerfil = document.getElementById('btn-logout-perfil');
   if (logoutBtnPerfil) {

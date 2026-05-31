@@ -14,9 +14,14 @@
   <div class="dashboard-container">
     <aside class="sidebar">
       <div class="sidebar-header" style="display: flex; align-items: center; gap: 12px; padding: 20px 15px; border-bottom: 1px solid #e9ecef;">
-        <img id="sidebar-avatar" src="../assets/img/aluno.png" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;" />
-        <i class="fas fa-user-circle" id="sidebar-avatar-icon" style="font-size: 40px; color: var(--primary-blue);"></i>
-        <h3 id="aluno-nome" style="font-size: 1.1rem; font-weight: 700; color: var(--bg-dark); margin: 0;">Aluno</h3>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img id="sidebar-avatar" src="../assets/img/aluno.png" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;" />
+          <i class="fas fa-user-circle" id="sidebar-avatar-icon" style="font-size: 40px; color: var(--primary-blue);"></i>
+          <h3 id="aluno-nome" style="font-size: 1.1rem; font-weight: 700; color: var(--bg-dark); margin: 0;">Aluno</h3>
+        </div>
+        <button id="mobile-sidebar-close" style="display: none;">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
 
       <nav class="sidebar-menu">
@@ -48,7 +53,10 @@
 
     <main class="main-content">
       <header class="top-bar">
-        <div class="top-bar-left">
+        <div class="top-bar-left" style="display: flex; align-items: center; gap: 12px;">
+          <button id="mobile-menu-toggle" class="btn-menu-mobile">
+            <i class="fas fa-bars"></i>
+          </button>
           <h2 id="page-title">Rastreamento</h2>
         </div>
         <div class="top-bar-right">
