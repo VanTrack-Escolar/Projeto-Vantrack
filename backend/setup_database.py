@@ -36,6 +36,8 @@ def setup_database():
             
             # Ler schema.sql
             schema_path = os.path.join(os.path.dirname(__file__), '..', 'database', 'schema.sql')
+            if not os.path.exists(schema_path):
+                schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
             print(f"\nLendo schema de: {schema_path}")
             
             with open(schema_path, 'r', encoding='utf-8') as f:

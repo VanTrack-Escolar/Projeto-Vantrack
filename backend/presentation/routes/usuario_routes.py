@@ -6,7 +6,7 @@ from exceptions import VantrackException
 
 bp = Blueprint('usuario', __name__, url_prefix='/api/usuarios')
 
-@bp.route('/<int:usuario_id>', methods=['GET'])
+@bp.route('/<usuario_id>', methods=['GET'])
 @requer_token
 def obter_usuario(usuario_id):
     try:
@@ -44,7 +44,7 @@ def listar_motoristas():
     except Exception as e:
         return jsonify({'erro': 'Erro ao listar motoristas'}), 500
 
-@bp.route('/<int:usuario_id>', methods=['PUT'])
+@bp.route('/<usuario_id>', methods=['PUT'])
 @requer_token
 def atualizar_usuario(usuario_id):
     try:

@@ -45,9 +45,22 @@ function carregarDadosUsuario() {
     // Preencher dados na tela de Perfil
     const elPerfilNome = document.getElementById('perfil-nome');
     if (elPerfilNome) {
-      const nomeCompleto = (usuarioAtual.nome + ' ' + (usuarioAtual.sobrenome || '')).trim();
-      elPerfilNome.value = nomeCompleto || usuarioAtual.nome;
-      document.getElementById('perfil-nome-titulo').textContent = nomeCompleto || usuarioAtual.nome;
+      let nomeCompleto = (usuarioAtual.nome + ' ' + (usuarioAtual.sobrenome || '')).trim();
+      const nStr = usuarioAtual.nome.trim();
+      const sStr = (usuarioAtual.sobrenome || '').trim();
+      if (sStr) {
+        if (nStr.toLowerCase() === sStr.toLowerCase()) {
+          nomeCompleto = nStr;
+        } else if (nStr.toLowerCase().endsWith(sStr.toLowerCase())) {
+          nomeCompleto = nStr;
+        } else if (nStr.toLowerCase().startsWith(sStr.toLowerCase())) {
+          nomeCompleto = nStr;
+        } else if (sStr.toLowerCase().startsWith(nStr.toLowerCase())) {
+          nomeCompleto = sStr;
+        }
+      }
+      elPerfilNome.value = nomeCompleto;
+      document.getElementById('perfil-nome-titulo').textContent = nomeCompleto;
       document.getElementById('perfil-email').value = usuarioAtual.email || '';
       document.getElementById('perfil-telefone').value = usuarioAtual.telefone || 'Não informado';
       document.getElementById('perfil-cidade').value = usuarioAtual.cidade || 'Não informada';
@@ -56,8 +69,8 @@ function carregarDadosUsuario() {
 }
 
 function trocarSecao(nomeSecao) {
-  sections.forEach(section => section.classList.remove('active'));
-  menuItems.forEach(item => item.classList.remove('active'));
+  document.querySelectorAll('.dashboard-section').forEach(section => section.classList.remove('active'));
+  document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
 
   const secao = document.getElementById(nomeSecao + '-section');
   if (secao) {
@@ -73,6 +86,7 @@ function trocarSecao(nomeSecao) {
     'inicio': 'Início',
     'alunos': 'Lista de Alunos',
     'rotas': 'Minhas Rotas',
+    'pagamentos': 'Pagamentos dos Alunos',
     'chat': 'Chat',
     'perfil': 'Meu Perfil'
   };
@@ -226,34 +240,49 @@ function inicializarPerfil() {
           return;
         }
 
-        // Salvar no localStorage
-        usuarioAtual.nome = nomeVal;
-        usuarioAtual.email = emailVal;
-        usuarioAtual.telefone = telVal;
-        usuarioAtual.cidade = cidadeVal;
+        // Salvar no backend via API
+        btnEditar.disabled = true;
+        btnEditar.textContent = 'Salvando...';
 
-        localStorage.setItem('usuario_dados', JSON.stringify(usuarioAtual));
+        fetchAPI('PUT', `/usuarios/${usuarioAtual.id}`, {
+          nome: nomeVal,
+          email: emailVal,
+          telefone: telVal,
+          cidade: cidadeVal
+        }).then(resultado => {
+          // Salvar no localStorage
+          usuarioAtual.nome = nomeVal;
+          usuarioAtual.email = emailVal;
+          usuarioAtual.telefone = telVal;
+          usuarioAtual.cidade = cidadeVal;
+          localStorage.setItem('usuario_dados', JSON.stringify(usuarioAtual));
 
-        // Atualizar textos no dashboard
-        document.getElementById('motorista-nome').textContent = nomeVal;
-        document.getElementById('profile-name').textContent = nomeVal;
-        document.getElementById('perfil-nome-titulo').textContent = nomeVal;
+          // Atualizar textos no dashboard
+          document.getElementById('motorista-nome').textContent = nomeVal;
+          document.getElementById('profile-name').textContent = nomeVal;
+          document.getElementById('perfil-nome-titulo').textContent = nomeVal;
 
-        // Desativar inputs
-        inputs.forEach(input => {
-          if (input) {
-            input.disabled = true;
-            input.style.backgroundColor = '#f9fafb';
-            input.style.borderColor = '#d1d5db';
-          }
+          // Desativar inputs
+          inputs.forEach(input => {
+            if (input) {
+              input.disabled = true;
+              input.style.backgroundColor = '#f9fafb';
+              input.style.borderColor = '#d1d5db';
+            }
+          });
+
+          btnEditar.disabled = false;
+          btnEditar.textContent = 'Editar Dados';
+          btnEditar.style.background = '#f3f4f6';
+          btnEditar.style.color = '#374151';
+          btnEditar.style.borderColor = '#d1d5db';
+
+          mostrarNotificacao('Perfil atualizado com sucesso!', 'sucesso');
+        }).catch(err => {
+          btnEditar.disabled = false;
+          btnEditar.textContent = 'Salvar Alterações';
+          mostrarNotificacao('Erro ao salvar alterações: ' + err.message, 'erro');
         });
-
-        btnEditar.textContent = 'Editar Dados';
-        btnEditar.style.background = '#f3f4f6';
-        btnEditar.style.color = '#374151';
-        btnEditar.style.borderColor = '#d1d5db';
-
-        mostrarNotificacao('Perfil atualizado com sucesso!', 'sucesso');
       }
     });
   }

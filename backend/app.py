@@ -32,7 +32,7 @@ def criar_app():
     db = Database()
     app.db = db
 
-    from presentation.routes import auth_routes, usuario_routes, veiculo_routes, rota_routes, inscricao_routes, gps_routes, dashboard_routes, dois_fatores_routes
+    from presentation.routes import auth_routes, usuario_routes, veiculo_routes, rota_routes, inscricao_routes, gps_routes, dashboard_routes, dois_fatores_routes, pagamento_routes
     app.register_blueprint(auth_routes.bp)
     app.register_blueprint(usuario_routes.bp)
     app.register_blueprint(veiculo_routes.bp)
@@ -41,6 +41,7 @@ def criar_app():
     app.register_blueprint(gps_routes.bp)
     app.register_blueprint(dashboard_routes.bp)
     app.register_blueprint(dois_fatores_routes.bp)
+    app.register_blueprint(pagamento_routes.bp)
 
     from presentation.sockets.realtime_handlers import RastreamentoSocket, ChatSocket
     

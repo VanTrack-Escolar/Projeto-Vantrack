@@ -34,7 +34,7 @@ class AtualizarPerfil:
         if not usuario:
             raise UsuarioNaoEncontrado(f"Usuário com id {usuario_id} não encontrado")
         
-        campos_permitidos = ['nome', 'telefone', 'cidade']
+        campos_permitidos = ['nome', 'email', 'telefone', 'cidade']
         dados_filtrados = {k: v for k, v in dados.items() if k in campos_permitidos}
         
         if not dados_filtrados:
