@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Vantrack</title>
+    <title>Painel Administrativo - Vantrack</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,15 +16,16 @@
     <div id="notificacoes" class="container-notificacoes"></div>
     <div class="login-container">
         <div class="login-header">
-            <img src="../assets/img/van.png.png" alt="Vantrack Logo" class="logo-van">
-            <h1>Bem-vindo<br>ao Vantrack</h1>
+            <i class="fas fa-shield-alt fa-3x" style="color: #60a5fa; filter: drop-shadow(0 8px 24px rgba(59, 130, 246, 0.5)); animation: logoFloat 4s ease-in-out infinite;"></i>
+            <h1 style="margin-top: 10px;">Área<br>Administrativa</h1>
+            <p>Faça login com suas credenciais de administrador</p>
         </div>
         <div class="login-card">
-            <form id="form-login">
+            <form id="form-login-admin">
                 <div class="form-group">
                     <div class="input-com-icone">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" id="email" name="email" data-validar="email" placeholder="E-mail" required>
+                        <input type="email" id="email" name="email" data-validar="email" placeholder="E-mail Administrativo" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -41,17 +42,15 @@
                     <input type="checkbox" id="lembrar" name="lembrar">
                     <label for="lembrar">Lembrar-me</label>
                 </div>
-                <button type="submit" class="btn-login">Entrar</button>
+                <button type="submit" class="btn-login">Entrar no Sistema</button>
             </form>
         </div>
         <div class="login-footer">
-            <a href="recuperar-senha.html" class="link-footer">Esqueci minha senha?</a>
-            <a href="escolha.html" class="link-footer">Ainda não tem conta? Cadastre-se</a>
-            <a href="admin-login.html" class="link-footer" style="margin-top: 6px; color: #60a5fa; font-size: 0.8rem;"><i class="fas fa-shield-alt" style="margin-right: 6px;"></i>Acesso Administrativo</a>
+            <a href="index.html" class="link-footer"><i class="fas fa-arrow-left" style="margin-right: 6px;"></i>Voltar para o Portal do Usuário</a>
         </div>
     </div>
     <script src="../assets/js/config.js?v=1.1"></script>
     <script src="../assets/js/validators.js"></script>
-    <script src="../assets/js/login.js?v=1.1"></script>
+    <script src="../assets/js/admin-login.js?v=1.1"></script>
 </body>
 </html>

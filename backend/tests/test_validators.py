@@ -100,11 +100,12 @@ class TestValidadores:
     def test_validar_tipo_perfil_valido(self):
         assert validar_tipo_perfil('aluno') == True
         assert validar_tipo_perfil('motorista') == True
+        assert validar_tipo_perfil('admin') == True
 
     @pytest.mark.unit
     def test_validar_tipo_perfil_invalido(self):
         with pytest.raises(ValueError):
-            validar_tipo_perfil('admin')
+            validar_tipo_perfil('outro_perfil')
         with pytest.raises(ValueError):
             validar_tipo_perfil('usuario')
 

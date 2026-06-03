@@ -17,8 +17,8 @@ class Usuario(BaseModel):
 
     @validator('tipo_perfil')
     def validar_tipo_perfil(cls, v):
-        if v not in ['aluno', 'motorista']:
-            raise ValueError('tipo_perfil deve ser "aluno" ou "motorista"')
+        if v not in ['aluno', 'motorista', 'admin']:
+            raise ValueError('tipo_perfil deve ser "aluno", "motorista" ou "admin"')
         return v
 
     class Config:
@@ -36,8 +36,8 @@ class UsuarioCreate(BaseModel):
 
     @validator('tipo_perfil')
     def validar_tipo_perfil(cls, v):
-        if v not in ['aluno', 'motorista']:
-            raise ValueError('tipo_perfil deve ser "aluno" ou "motorista"')
+        if v not in ['aluno', 'motorista', 'admin']:
+            raise ValueError('tipo_perfil deve ser "aluno", "motorista" ou "admin"')
         return v
 
 class UsuarioLogin(BaseModel):

@@ -189,3 +189,17 @@ CREATE INDEX idx_pagamentos_motorista_id ON pagamentos(motorista_id);
 CREATE INDEX idx_pagamentos_rota_id ON pagamentos(rota_id);
 CREATE INDEX idx_pagamentos_status ON pagamentos(status);
 CREATE INDEX idx_pagamentos_data_pagamento ON pagamentos(data_pagamento);
+
+CREATE TABLE chamados (
+  id CHAR(36) PRIMARY KEY,
+  usuario_id CHAR(36) NOT NULL,
+  assunto VARCHAR(150) NOT NULL,
+  descricao TEXT NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'aberto',
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+CREATE INDEX idx_chamados_usuario_id ON chamados(usuario_id);
+CREATE INDEX idx_chamados_status ON chamados(status);
+

@@ -46,6 +46,10 @@
           <i class="fas fa-user-circle"></i>
           <span>Perfil</span>
         </a>
+        <a href="#suporte" class="menu-item" data-menu="suporte">
+          <i class="fas fa-headset"></i>
+          <span>Suporte / Chamados</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -343,6 +347,70 @@
                   <span>Sair da Conta</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEÇÃO SUPORTE E CHAMADOS -->
+        <section id="suporte-section" class="dashboard-section">
+          <div class="section-header" style="margin-bottom: 25px;">
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: #1e293b;">Suporte e Chamados</h1>
+            <p style="color: #64748b; font-size: 0.95rem;">Abra chamados para relatar problemas no app e converse com o administrador</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+            <!-- Novo Chamado Form -->
+            <div class="card" style="background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);">
+              <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px;">
+                <i class="fas fa-plus-circle" style="color: var(--primary-blue); font-size: 1.2rem;"></i>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b;">Abrir Novo Chamado</h3>
+              </div>
+              <form id="form-novo-chamado" style="display: flex; flex-direction: column; gap: 16px;">
+                <div>
+                  <label style="font-weight: 600; color: #475569; font-size: 0.85rem; display: block; margin-bottom: 6px;">Assunto:</label>
+                  <input type="text" id="chamado-assunto" required placeholder="Ex: Problema com rota, veículo quebrado, pagamentos, etc." style="width: 100%; padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; outline: none; font-family: inherit; box-sizing: border-box;" />
+                </div>
+                <div>
+                  <label style="font-weight: 600; color: #475569; font-size: 0.85rem; display: block; margin-bottom: 6px;">Descrição do Problema:</label>
+                  <textarea id="chamado-descricao" required rows="5" placeholder="Descreva detalhadamente o problema ou situação para que possamos ajudar." style="width: 100%; padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; outline: none; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary-checkout" style="padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; width: 100%; border: none; cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(15, 108, 213, 0.15); display: flex; align-items: center; justify-content: center; gap: 8px; background: #1062c0; color: white;">
+                  <i class="fas fa-paper-plane"></i> Enviar Chamado
+                </button>
+              </form>
+            </div>
+
+            <!-- Meus Chamados List -->
+            <div class="card" style="background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; height: 100%; min-height: 400px; box-sizing: border-box;">
+              <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px;">
+                <i class="fas fa-history" style="color: var(--primary-blue); font-size: 1.2rem;"></i>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b;">Meus Chamados</h3>
+              </div>
+              <div style="flex: 1; overflow-y: auto;">
+                <ul id="meus-chamados-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                  <li style="text-align: center; color: #64748b; padding: 20px; font-size: 0.9rem;">Nenhum chamado aberto.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Chat Flutuante / Modal com Suporte (Admin) -->
+          <div id="suporte-chat-modal" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 380px; height: 500px; background: white; border-radius: 16px; border: 1px solid #cbd5e1; box-shadow: 0 12px 36px rgba(0,0,0,0.15); z-index: 1000; flex-direction: column; overflow: hidden; animation: loginFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+            <!-- Cabeçalho do Chat -->
+            <div style="background: #1062c0; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700;">Suporte Técnico (Admin)</h4>
+                <p id="chat-suporte-assunto" style="margin: 2px 0 0 0; font-size: 0.75rem; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Chamado: ...</p>
+              </div>
+              <button id="close-suporte-chat" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.1rem;"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Área de Mensagens -->
+            <div id="suporte-chat-messages-container" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f8fafc;">
+            </div>
+            <!-- Entrada de Mensagem -->
+            <div style="padding: 10px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; background: white;">
+              <input type="text" id="input-suporte-chat" placeholder="Digite sua mensagem..." style="flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-family: inherit; font-size: 0.9rem;" />
+              <button id="btn-enviar-suporte-chat" style="background: #1062c0; color: white; border: none; padding: 0 14px; border-radius: 8px; font-weight: 600; cursor: pointer;"><i class="fas fa-paper-plane"></i></button>
             </div>
           </div>
         </section>

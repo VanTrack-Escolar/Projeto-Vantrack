@@ -69,6 +69,14 @@ def seed():
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (aluno3_id, 'aluno', 'Ana Clara', 'Ramos', '98765432103', 'aluno3@teste.com', '11933456789', 'São Paulo', senha_hash))
             
+            # 4.5 Criar Administrador
+            admin_id = str(uuid4())
+            print(f"Criando Administrador: Admin Vantrack ({admin_id})...")
+            cursor.execute("""
+                INSERT INTO usuarios (id, tipo_perfil, nome, sobrenome, cpf, email, telefone, cidade, senha_hash)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (admin_id, 'admin', 'Admin', 'Vantrack', '00000000000', 'admin@teste.com', '11999999999', 'São Paulo', senha_hash))
+            
             # 5. Criar Veículo para o Motorista
             veiculo_id = str(uuid4())
             print(f"Criando Veículo: Sprinter ABC-1234 ({veiculo_id})...")
@@ -168,6 +176,7 @@ def seed():
             print("  • ALUNO 1: aluno@teste.com | Senha: 123456")
             print("  • ALUNO 2: aluno2@teste.com | Senha: 123456")
             print("  • ALUNO 3: aluno3@teste.com | Senha: 123456")
+            print("  • ADMIN: admin@teste.com | Senha: 123456")
             print("=" * 60)
             
     except Exception as e:

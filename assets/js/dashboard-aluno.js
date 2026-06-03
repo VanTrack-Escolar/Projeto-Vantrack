@@ -97,10 +97,15 @@ function trocarSecao(nomeSecao) {
     'frequencia': 'Frequência Rápida',
     'motorista': 'Chat com Motorista',
     'pagamentos': 'Meus Pagamentos',
-    'perfil': 'Meu Perfil'
+    'perfil': 'Meu Perfil',
+    'suporte': 'Suporte / Chamados'
   };
 
   document.getElementById('page-title').textContent = titles[nomeSecao] || nomeSecao;
+
+  if (nomeSecao === 'suporte') {
+    carregarChamadosUsuario();
+  }
 }
 
 function inicializarPresenca() {
@@ -962,6 +967,199 @@ function inicializarAcoesRapidas() {
   });
 }
 
+// --- FUNCIONALIDADES DE SUPORTE E CHAMADOS ---
+
+async function carregarChamadosUsuario() {
+  const container = document.getElementById('meus-chamados-list');
+  if (!container) return;
+
+  try {
+    const chamados = await fetchAPI('GET', '/chamados');
+    if (chamados) {
+      container.innerHTML = '';
+      if (chamados.length === 0) {
+        container.innerHTML = '<li style="text-align: center; color: #64748b; padding: 20px; font-size: 0.9rem;">Nenhum chamado aberto.</li>';
+        return;
+      }
+
+      chamados.forEach(c => {
+        const li = document.createElement('li');
+        li.style.background = '#f8fafc';
+        li.style.border = '1px solid #e2e8f0';
+        li.style.borderRadius = '12px';
+        li.style.padding = '16px';
+        li.style.display = 'flex';
+        li.style.flexDirection = 'column';
+        li.style.gap = '8px';
+        li.style.transition = 'all 0.2s';
+
+        const badgeColor = c.status === 'aberto' ? '#ef4444' : c.status === 'em_atendimento' ? '#f59e0b' : '#10b981';
+        const badgeText = c.status === 'aberto' ? 'Aberto' : c.status === 'em_atendimento' ? 'Em Atendimento' : 'Resolvido';
+
+        li.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-size: 0.95rem; color: #1e293b;">${c.assunto}</strong>
+            <span style="font-size: 0.75rem; font-weight: 700; color: white; background: ${badgeColor}; padding: 3px 8px; border-radius: 20px;">${badgeText}</span>
+          </div>
+          <p style="margin: 0; font-size: 0.85rem; color: #64748b; line-height: 1.4;">${c.descricao}</p>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+            <span style="font-size: 0.75rem; color: #94a3b8;">Aberto em: ${new Date(c.criado_em).toLocaleDateString('pt-BR')}</span>
+            <button class="btn-chat-suporte-abrir" style="background: transparent; border: none; color: #1062c0; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit;">
+              <i class="fas fa-comments"></i> Conversar com Suporte
+            </button>
+          </div>
+        `;
+
+        li.querySelector('.btn-chat-suporte-abrir').addEventListener('click', () => {
+          abrirChatSuporte(c.id, c.assunto);
+        });
+
+        container.appendChild(li);
+      });
+    }
+  } catch (err) {
+    console.error('Erro ao carregar chamados:', err);
+    container.innerHTML = '<li style="text-align: center; color: #ef4444; padding: 20px; font-size: 0.9rem;">Erro ao obter chamados.</li>';
+  }
+}
+
+async function abrirChatSuporte(chamadoId, chamadoAssunto) {
+  try {
+    // Buscar ID do default admin
+    const res = await fetchAPI('GET', '/chamados/admin-id');
+    if (!res || !res.admin_id) {
+      mostrarNotificacao('Erro: Nenhum administrador de suporte disponível no momento.', 'erro');
+      return;
+    }
+
+    const adminId = res.admin_id;
+    window.adminSupportId = adminId;
+
+    // Configurar Modal
+    const modal = document.getElementById('suporte-chat-modal');
+    const assuntoEl = document.getElementById('chat-suporte-assunto');
+    if (modal && assuntoEl) {
+      assuntoEl.textContent = `Chamado: ${chamadoAssunto}`;
+      modal.style.display = 'flex';
+    }
+
+    // Inscrever na conversa
+    if (typeof socketChat !== 'undefined' && socketChat) {
+      socketChat.emit('inscrever_conversa', { outro_usuario_id: adminId });
+      socketChat.emit('marcar_como_lida', { outro_usuario_id: adminId });
+    }
+
+    // Carregar histórico
+    const container = document.getElementById('suporte-chat-messages-container');
+    if (container) {
+      container.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.8rem; padding: 10px;">Carregando mensagens...</div>';
+      const response = await fetchAPI('GET', `/dashboard/mensagens/${adminId}`);
+      if (response && response.mensagens) {
+        container.innerHTML = '';
+        const meId = localStorage.getItem('usuario_id');
+        
+        if(response.mensagens.length === 0) {
+          container.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.8rem; padding: 10px;">Olá! Envie uma mensagem para iniciar a conversa com o administrador.</div>';
+        }
+
+        response.mensagens.forEach(msg => {
+          const isMe = msg.remetente_id === meId;
+          const classe = isMe ? 'mensagem-enviada' : 'mensagem-recebida';
+          const hora = new Date(msg.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+          const div = document.createElement('div');
+          div.className = classe;
+          div.style.alignSelf = isMe ? 'flex-end' : 'flex-start';
+          div.style.background = isMe ? '#1062c0' : '#e2e8f0';
+          div.style.color = isMe ? 'white' : '#1e293b';
+          div.style.padding = '8px 12px';
+          div.style.borderRadius = isMe ? '12px 12px 0 12px' : '12px 12px 12px 0';
+          div.style.maxWidth = '80%';
+          div.style.margin = '4px 0';
+          
+          div.innerHTML = `<p style="margin: 0; font-size: 0.9rem;">${msg.texto}</p><span style="font-size: 0.65rem; opacity: 0.8; display: block; text-align: right; margin-top: 2px;">${hora}</span>`;
+          container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao abrir chat de suporte:', err);
+    mostrarNotificacao('Erro ao carregar chat de suporte.', 'erro');
+  }
+}
+
+function enviarMensagemSuporte() {
+  const input = document.getElementById('input-suporte-chat');
+  if (!input || !input.value.trim() || !window.adminSupportId) return;
+
+  if (typeof socketChat === 'undefined' || !socketChat) {
+    mostrarNotificacao('Erro na conexão de chat.', 'erro');
+    return;
+  }
+
+  socketChat.emit('enviar_mensagem', {
+    destinatario_id: window.adminSupportId,
+    texto: input.value.trim()
+  });
+
+  input.value = '';
+}
+
+function inicializarSuporteAluno() {
+  const form = document.getElementById('form-novo-chamado');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const assunto = document.getElementById('chamado-assunto').value.trim();
+      const descricao = document.getElementById('chamado-descricao').value.trim();
+
+      if (!assunto || !descricao) {
+        mostrarNotificacao('Por favor, preencha todos os campos.', 'erro');
+        return;
+      }
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
+      try {
+        const res = await fetchAPI('POST', '/chamados', { assunto, descricao });
+        if (res) {
+          mostrarNotificacao('Chamado aberto com sucesso!', 'sucesso');
+          form.reset();
+          carregarChamadosUsuario();
+        }
+      } catch (err) {
+        mostrarNotificacao(err.message || 'Erro ao abrir chamado', 'erro');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Chamado';
+      }
+    });
+  }
+
+  // Fechar chat modal
+  const closeBtn = document.getElementById('close-suporte-chat');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      document.getElementById('suporte-chat-modal').style.display = 'none';
+    });
+  }
+
+  // Enviar mensagem
+  const sendBtn = document.getElementById('btn-enviar-suporte-chat');
+  const inputChat = document.getElementById('input-suporte-chat');
+  if (sendBtn && inputChat) {
+    sendBtn.addEventListener('click', enviarMensagemSuporte);
+    inputChat.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        enviarMensagemSuporte();
+      }
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   carregarDadosUsuario();
   carregarDadosDashboardAluno();
@@ -971,6 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inicializarMenuMobile();
   inicializarVincularMotorista();
   inicializarAcoesRapidas();
+  inicializarSuporteAluno();
   
   const logoutBtnPerfil = document.getElementById('btn-logout-perfil');
   if (logoutBtnPerfil) {

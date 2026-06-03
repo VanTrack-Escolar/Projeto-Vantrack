@@ -32,7 +32,21 @@ def criar_app():
     db = Database()
     app.db = db
 
-    from presentation.routes import auth_routes, usuario_routes, veiculo_routes, rota_routes, inscricao_routes, gps_routes, dashboard_routes, dois_fatores_routes, pagamento_routes
+    # Criar tabela de chamados se não existir
+    db.execute_query("""
+        CREATE TABLE IF NOT EXISTS chamados (
+          id CHAR(36) PRIMARY KEY,
+          usuario_id CHAR(36) NOT NULL,
+          assunto VARCHAR(150) NOT NULL,
+          descricao TEXT NOT NULL,
+          status VARCHAR(20) NOT NULL DEFAULT 'aberto',
+          criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        )
+    """)
+
+    from presentation.routes import auth_routes, usuario_routes, veiculo_routes, rota_routes, inscricao_routes, gps_routes, dashboard_routes, dois_fatores_routes, pagamento_routes, chamado_routes
     app.register_blueprint(auth_routes.bp)
     app.register_blueprint(usuario_routes.bp)
     app.register_blueprint(veiculo_routes.bp)
@@ -42,6 +56,7 @@ def criar_app():
     app.register_blueprint(dashboard_routes.bp)
     app.register_blueprint(dois_fatores_routes.bp)
     app.register_blueprint(pagamento_routes.bp)
+    app.register_blueprint(chamado_routes.bp)
 
     from presentation.sockets.realtime_handlers import RastreamentoSocket, ChatSocket
     

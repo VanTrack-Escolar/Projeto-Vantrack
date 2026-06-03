@@ -168,6 +168,8 @@ async function verificarCodigo() {
           const perfil = usuario ? usuario.tipo_perfil : 'aluno';
           if (perfil === 'motorista') {
             window.location.href = '/pages/dashboard-motorista.html';
+          } else if (perfil === 'admin') {
+            window.location.href = '/pages/dashboard-admin.html';
           } else {
             window.location.href = '/pages/dashboard-aluno.html';
           }

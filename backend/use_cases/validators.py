@@ -63,7 +63,7 @@ def validar_cidade(cidade):
 
 def validar_tipo_perfil(tipo_perfil):
     """Valida tipo de perfil"""
-    if tipo_perfil not in ['aluno', 'motorista']:
+    if tipo_perfil not in ['aluno', 'motorista', 'admin']:
         raise ValueError("Tipo de perfil inválido")
     return True
 

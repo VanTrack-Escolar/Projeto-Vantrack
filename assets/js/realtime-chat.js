@@ -66,6 +66,32 @@ const ChatRealtime = {
     const { remetente_id, destinatario_id, texto, criado_em } = data;
     const usuarioID = localStorage.getItem('usuario_id');
     
+    // Se o modal de suporte estiver aberto e for conversa com admin
+    const supportContainer = document.getElementById('suporte-chat-messages-container');
+    const suporteModal = document.getElementById('suporte-chat-modal');
+    if (suporteModal && suporteModal.style.display === 'flex') {
+       const adminId = window.adminSupportId;
+       if (remetente_id === adminId || (remetente_id === usuarioID && destinatario_id === adminId)) {
+          if (supportContainer) {
+              const classe = remetente_id === usuarioID ? 'mensagem-enviada' : 'mensagem-recebida';
+              const hora = new Date(criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+              const divMensagem = document.createElement('div');
+              divMensagem.className = classe;
+              divMensagem.style.alignSelf = remetente_id === usuarioID ? 'flex-end' : 'flex-start';
+              divMensagem.style.background = remetente_id === usuarioID ? '#1062c0' : '#e2e8f0';
+              divMensagem.style.color = remetente_id === usuarioID ? 'white' : '#1e293b';
+              divMensagem.style.padding = '8px 12px';
+              divMensagem.style.borderRadius = remetente_id === usuarioID ? '12px 12px 0 12px' : '12px 12px 12px 0';
+              divMensagem.style.maxWidth = '80%';
+              divMensagem.style.margin = '4px 0';
+              divMensagem.innerHTML = `<p style="margin: 0; font-size: 0.9rem;">${texto}</p><span style="font-size: 0.65rem; opacity: 0.8; display: block; text-align: right; margin-top: 2px;">${hora}</span>`;
+              supportContainer.appendChild(divMensagem);
+              supportContainer.scrollTop = supportContainer.scrollHeight;
+          }
+          return;
+       }
+    }
+
     // Identificar a qual conversa pertence essa mensagem
     const outroId = remetente_id === usuarioID ? destinatario_id : remetente_id;
     

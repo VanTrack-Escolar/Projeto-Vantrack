@@ -129,9 +129,9 @@ def app():
     sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
     
     from app import criar_app
-    app = criar_app()
-    app.config['TESTING'] = True
-    return app
+    app_obj, socketio = criar_app()
+    app_obj.config['TESTING'] = True
+    return app_obj
 
 @pytest.fixture
 def client(app):
