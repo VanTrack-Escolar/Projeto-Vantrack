@@ -22,6 +22,7 @@ __pycache__/
 venv/
 env/
 .env
+.env.example
 
 # Se utilizar pacotes Node.js futuramente
 node_modules/
