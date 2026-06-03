@@ -33,14 +33,24 @@ function validarSessao() {
   return true;
 }
 
+function obterPrimeirosNomes(nome, sobrenome) {
+  const nomeCompleto = (nome + ' ' + (sobrenome || '')).trim();
+  const partes = nomeCompleto.split(/\s+/);
+  if (partes.length > 2) {
+    return partes.slice(0, 2).join(' ');
+  }
+  return nomeCompleto;
+}
+
 function carregarDadosUsuario() {
   if (!validarSessao()) return;
 
   const usuarioJSON = localStorage.getItem('usuario_dados');
   if (usuarioJSON) {
     usuarioAtual = JSON.parse(usuarioJSON);
-    document.getElementById('aluno-nome').textContent = usuarioAtual.nome;
-    document.getElementById('profile-name').textContent = usuarioAtual.nome;
+    const nomeExibicao = obterPrimeirosNomes(usuarioAtual.nome, usuarioAtual.sobrenome);
+    document.getElementById('aluno-nome').textContent = nomeExibicao;
+    document.getElementById('profile-name').textContent = nomeExibicao;
     
     // Preencher dados na tela de Perfil
     const elPerfilNome = document.getElementById('perfil-nome');
@@ -60,7 +70,7 @@ function carregarDadosUsuario() {
         }
       }
       elPerfilNome.value = nomeCompleto;
-      document.getElementById('perfil-nome-titulo').textContent = nomeCompleto;
+      document.getElementById('perfil-nome-titulo').textContent = obterPrimeirosNomes(usuarioAtual.nome, usuarioAtual.sobrenome);
       document.getElementById('perfil-email').value = usuarioAtual.email || '';
       document.getElementById('perfil-telefone').value = usuarioAtual.telefone || 'Não informado';
       document.getElementById('perfil-cidade').value = usuarioAtual.cidade || 'Não informada';
@@ -146,6 +156,63 @@ function inicializarCalendario() {
   let mesAtual = new Date().getMonth();
   let anoAtual = new Date().getFullYear();
 
+  const storageKey = `vantrack_frequencia_${usuarioAtual.id || 'default'}`;
+  let historicoPresencas = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+  // Seeder de presença mock na primeira carga para fins demonstrativos
+  if (!localStorage.getItem(storageKey)) {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth();
+    
+    // Seed para o mês atual e anterior
+    for (let mOffset = -1; mOffset <= 0; mOffset++) {
+      const targetMonth = (mes + mOffset + 12) % 12;
+      const targetYear = targetMonth > mes ? ano - 1 : ano;
+      const totalDias = new Date(targetYear, targetMonth + 1, 0).getDate();
+      const maxDay = (mOffset === 0) ? hoje.getDate() - 1 : totalDias;
+      
+      for (let d = 1; d <= maxDay; d++) {
+        const dataStr = `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const r = Math.random();
+        if (r < 0.7) {
+          historicoPresencas[dataStr] = 'presente';
+        } else if (r < 0.9) {
+          historicoPresencas[dataStr] = 'ausente';
+        }
+      }
+    }
+    localStorage.setItem(storageKey, JSON.stringify(historicoPresencas));
+  }
+
+  function atualizarMetricasFrequencia(mes, ano) {
+    const ultima = new Date(ano, mes + 1, 0);
+    let countPresente = 0;
+    let countAusente = 0;
+    
+    for (let i = 1; i <= ultima.getDate(); i++) {
+      const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      const status = historicoPresencas[dataStr];
+      if (status === 'presente') {
+        countPresente++;
+      } else if (status === 'ausente') {
+        countAusente++;
+      }
+    }
+    
+    const elPresencas = document.getElementById('calc-presencas');
+    const elFaltas = document.getElementById('calc-faltas');
+    const elTaxa = document.getElementById('calc-taxa');
+    
+    if (elPresencas) elPresencas.textContent = countPresente;
+    if (elFaltas) elFaltas.textContent = countAusente;
+    if (elTaxa) {
+      const totalRegistrados = countPresente + countAusente;
+      const taxa = totalRegistrados > 0 ? Math.round((countPresente / totalRegistrados) * 100) : 100;
+      elTaxa.textContent = `${taxa}%`;
+    }
+  }
+
   function renderizarCalendario(mes, ano) {
     diasCalendario.innerHTML = '';
     const primeira = new Date(ano, mes, 1);
@@ -160,20 +227,140 @@ function inicializarCalendario() {
       diasCalendario.appendChild(div);
     }
 
+    const hoje = new Date();
+
     for (let i = 1; i <= ultima.getDate(); i++) {
       const div = document.createElement('div');
       div.className = 'dia-calendario';
       div.textContent = i;
 
-      const hoje = new Date();
-      if (i === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear()) {
+      const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      const status = historicoPresencas[dataStr];
+      
+      const dataObj = new Date(ano, mes, i);
+      const diaSemana = dataObj.getDay();
+      const isWeekend = (diaSemana === 0 || diaSemana === 6);
+      const isHoje = (hoje.getDate() === i && hoje.getMonth() === mes && hoje.getFullYear() === ano);
+
+      if (isWeekend) {
+        div.classList.add('fim-de-semana');
+      }
+
+      if (isHoje) {
+        div.classList.add('hoje');
+      }
+
+      if (status === 'presente') {
         div.classList.add('presente');
-      } else if (Math.random() > 0.5) {
-        div.classList.add('presente');
+      } else if (status === 'ausente') {
+        div.classList.add('ausente');
+      }
+
+      // Adicionar evento de clique para marcar frequência (somente dias de semana)
+      if (!isWeekend) {
+        div.addEventListener('click', () => abrirModalPresenca(i, mes, ano, div));
       }
 
       diasCalendario.appendChild(div);
     }
+
+    atualizarMetricasFrequencia(mes, ano);
+  }
+
+  function abrirModalPresenca(dia, mes, ano, elementoDia) {
+    const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+    const dataFormatada = `${String(dia).padStart(2, '0')}/${String(mes + 1).padStart(2, '0')}/${ano}`;
+    
+    const modalId = 'modal-marcar-presenca';
+    let modal = document.getElementById(modalId);
+    if (modal) modal.remove();
+
+    const html = `
+      <div id="${modalId}" class="modal-overlay" style="z-index: 2000;">
+        <div class="modal-content" style="max-width: 400px; padding: 28px; border-radius: 20px; text-align: center;">
+          <div style="background: #e0f2fe; color: #0f6cd5; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 16px auto;">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <h3 style="margin: 0 0 6px 0; font-size: 1.25rem; font-weight: 700; color: #1e293b;">Confirmar Presença</h3>
+          <p style="margin: 0 0 24px 0; font-size: 0.9rem; color: #64748b;">Como será seu embarque no dia <strong>${dataFormatada}</strong>?</p>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+            <button id="btn-marcar-vai" class="btn-primary-checkout" style="background: #10b981; border: none; padding: 12px; font-weight: 700; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); color: white; cursor: pointer; width: 100%;">
+              <i class="fas fa-check-circle" style="font-size: 1.1rem;"></i> Vou na van (Verde)
+            </button>
+            <button id="btn-marcar-nao-vai" class="btn-primary-checkout" style="background: #ef4444; border: none; padding: 12px; font-weight: 700; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); color: white; cursor: pointer; width: 100%;">
+              <i class="fas fa-times-circle" style="font-size: 1.1rem;"></i> Não vou (Vermelho)
+            </button>
+            <button id="btn-marcar-limpar" style="background: transparent; border: 1.5px solid #cbd5e1; color: #475569; padding: 10px; font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 0.9rem; width: 100%;">
+              Limpar Marcação
+            </button>
+          </div>
+          
+          <button id="btn-fechar-presenca" style="background: #f1f5f9; border: none; color: #475569; padding: 10px 18px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+            Voltar
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+    
+    modal = document.getElementById(modalId);
+    
+    document.getElementById('btn-fechar-presenca').onclick = () => modal.remove();
+    
+    document.getElementById('btn-marcar-vai').onclick = () => {
+      historicoPresencas[dataStr] = 'presente';
+      localStorage.setItem(storageKey, JSON.stringify(historicoPresencas));
+      elementoDia.className = 'dia-calendario presente';
+      
+      const hojeVal = new Date();
+      if (hojeVal.getDate() === dia && hojeVal.getMonth() === mes && hojeVal.getFullYear() === ano) {
+        elementoDia.classList.add('hoje');
+      }
+      
+      atualizarMetricasFrequencia(mes, ano);
+      
+      if (typeof mostrarNotificacao !== 'undefined') {
+        mostrarNotificacao(`Presença confirmada para o dia ${dia}!`, 'sucesso');
+      }
+      modal.remove();
+    };
+    
+    document.getElementById('btn-marcar-nao-vai').onclick = () => {
+      historicoPresencas[dataStr] = 'ausente';
+      localStorage.setItem(storageKey, JSON.stringify(historicoPresencas));
+      elementoDia.className = 'dia-calendario ausente';
+      
+      const hojeVal = new Date();
+      if (hojeVal.getDate() === dia && hojeVal.getMonth() === mes && hojeVal.getFullYear() === ano) {
+        elementoDia.classList.add('hoje');
+      }
+      
+      atualizarMetricasFrequencia(mes, ano);
+      
+      if (typeof mostrarNotificacao !== 'undefined') {
+        mostrarNotificacao(`Falta justificada para o dia ${dia}.`, 'aviso');
+      }
+      modal.remove();
+    };
+    
+    document.getElementById('btn-marcar-limpar').onclick = () => {
+      delete historicoPresencas[dataStr];
+      localStorage.setItem(storageKey, JSON.stringify(historicoPresencas));
+      elementoDia.className = 'dia-calendario';
+      
+      const hojeVal = new Date();
+      if (hojeVal.getDate() === dia && hojeVal.getMonth() === mes && hojeVal.getFullYear() === ano) {
+        elementoDia.classList.add('hoje');
+      }
+      
+      atualizarMetricasFrequencia(mes, ano);
+      
+      if (typeof mostrarNotificacao !== 'undefined') {
+        mostrarNotificacao(`Marcação do dia ${dia} removida.`, 'info');
+      }
+      modal.remove();
+    };
   }
 
   btnMesAnterior.addEventListener('click', () => {
@@ -271,15 +458,37 @@ function inicializarPerfil() {
 
       const reader = new FileReader();
       reader.onload = function(evt) {
-        const base64Str = evt.target.result;
-        
-        // Salvar localmente
-        localStorage.setItem('vantrack_avatar_' + usuarioAtual.id, base64Str);
-        
-        // Atualizar visualizações
-        carregarAvatar();
-        
-        mostrarNotificacao('Foto de perfil atualizada com sucesso!', 'sucesso');
+        const img = new Image();
+        img.src = evt.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const max_size = 150;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > max_size) {
+              height *= max_size / width;
+              width = max_size;
+            }
+          } else {
+            if (height > max_size) {
+              width *= max_size / height;
+              height = max_size;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          
+          localStorage.setItem('vantrack_avatar_' + usuarioAtual.id, compressedBase64);
+          carregarAvatar();
+          mostrarNotificacao('Foto de perfil atualizada com sucesso!', 'sucesso');
+        };
       };
       reader.readAsDataURL(file);
     });
@@ -618,9 +827,11 @@ function inicializarPerfil() {
   }
 }
 
-async function carregarEnderecoAluno() {
+async function carregarDadosDashboardAluno() {
   try {
     const res = await fetchAPI('GET', '/dashboard/aluno');
+    
+    // 1. Carregar endereços
     if (res && res.endereco_principal) {
       const ep = res.endereco_principal;
       document.getElementById('endereco-coleta-atual').textContent = ep.endereco_coleta || 'Não informado';
@@ -633,8 +844,33 @@ async function carregarEnderecoAluno() {
       document.getElementById('endereco-coleta-atual').textContent = 'Não informado';
       document.getElementById('endereco-entrega-atual').textContent = 'Não informado';
     }
+
+    // 2. Carregar informações do motorista e veículo para o painel flutuante
+    if (res) {
+      const elMotorista = document.getElementById('motorista-nome-status');
+      const elVeiculo = document.getElementById('veiculo-modelo-placa');
+      const elHoraSaida = document.getElementById('horario-saida-rastreamento');
+      
+      if (elMotorista) {
+        elMotorista.textContent = res.motorista 
+          ? obterPrimeirosNomes(res.motorista.nome, res.motorista.sobrenome) 
+          : 'Sem motorista';
+      }
+      
+      if (elVeiculo) {
+        elVeiculo.textContent = res.veiculo 
+          ? `${res.veiculo.modelo} (${res.veiculo.placa})` 
+          : 'Sem veículo';
+      }
+      
+      if (elHoraSaida) {
+        elHoraSaida.textContent = (res.rota_atual && res.rota_atual.horario_saida) 
+          ? res.rota_atual.horario_saida.substring(0, 5) 
+          : '--:--';
+      }
+    }
   } catch (e) {
-    console.error('Erro ao carregar endereços do aluno:', e);
+    console.error('Erro ao carregar dados do dashboard do aluno:', e);
     document.getElementById('endereco-coleta-atual').textContent = 'Erro ao carregar';
     document.getElementById('endereco-entrega-atual').textContent = 'Erro ao carregar';
   }
@@ -667,15 +903,74 @@ function inicializarMenuMobile() {
   });
 }
 
+function inicializarVincularMotorista() {
+  const btnVincular = document.getElementById('btn-vincular-motorista');
+  const inputCodigo = document.getElementById('input-codigo-motorista');
+
+  if (btnVincular && inputCodigo) {
+    btnVincular.addEventListener('click', async () => {
+      const code = inputCodigo.value.trim().toUpperCase();
+      if (code.length !== 6) {
+        mostrarNotificacao('Por favor, informe um código com exatamente 6 caracteres.', 'erro');
+        return;
+      }
+
+      btnVincular.disabled = true;
+      btnVincular.textContent = 'Vinculando...';
+
+      try {
+        const res = await fetchAPI('POST', '/dashboard/vincular-motorista', { codigo: code });
+        if (res) {
+          mostrarNotificacao(res.mensagem || 'Motorista vinculado com sucesso!', 'sucesso');
+          inputCodigo.value = '';
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
+      } catch (err) {
+        mostrarNotificacao(err.message || 'Erro ao vincular motorista', 'erro');
+      } finally {
+        btnVincular.disabled = false;
+        btnVincular.textContent = 'Vincular Motorista';
+      }
+    });
+  }
+}
+
+function inicializarAcoesRapidas() {
+  const botoesAcao = document.querySelectorAll('.btn-acao-rapida');
+  botoesAcao.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const msg = btn.getAttribute('data-msg');
+      if (!msg) return;
+
+      if (typeof ChatRealtime !== 'undefined' && ChatRealtime.enviarMensagemRapida) {
+        // Enviar via WebSocket do chat
+        ChatRealtime.enviarMensagemRapida(msg);
+        
+        // Exibir notificação de sucesso
+        if (typeof mostrarNotificacao === 'function') {
+          mostrarNotificacao('Alerta enviado para o motorista!', 'sucesso');
+        }
+      } else {
+        if (typeof mostrarNotificacao === 'function') {
+          mostrarNotificacao('Erro ao enviar mensagem: módulo de chat não carregado.', 'erro');
+        }
+      }
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   carregarDadosUsuario();
-  carregarEnderecoAluno();
+  carregarDadosDashboardAluno();
   trocarSecao('rastreamento');
-  inicializarPresenca();
-  inicializarTogglePresenca();
   inicializarCalendario();
   inicializarPerfil();
   inicializarMenuMobile();
+  inicializarVincularMotorista();
+  inicializarAcoesRapidas();
   
   const logoutBtnPerfil = document.getElementById('btn-logout-perfil');
   if (logoutBtnPerfil) {

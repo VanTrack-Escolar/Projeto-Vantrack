@@ -5,6 +5,11 @@ let usuarioAtual = {
   email: null
 };
 
+let mapInstance = null;
+let marcadorVeiculo = null;
+let watchId = null;
+
+
 const menuItems = document.querySelectorAll('.menu-item');
 const sections = document.querySelectorAll('.dashboard-section');
 const logoutBtn = document.getElementById('logout-btn');
@@ -33,14 +38,24 @@ function validarSessao() {
   return true;
 }
 
+function obterPrimeirosNomes(nome, sobrenome) {
+  const nomeCompleto = (nome + ' ' + (sobrenome || '')).trim();
+  const partes = nomeCompleto.split(/\s+/);
+  if (partes.length > 2) {
+    return partes.slice(0, 2).join(' ');
+  }
+  return nomeCompleto;
+}
+
 function carregarDadosUsuario() {
   if (!validarSessao()) return;
 
   const usuarioJSON = localStorage.getItem('usuario_dados');
   if (usuarioJSON) {
     usuarioAtual = JSON.parse(usuarioJSON);
-    document.getElementById('motorista-nome').textContent = usuarioAtual.nome;
-    document.getElementById('profile-name').textContent = usuarioAtual.nome;
+    const nomeExibicao = obterPrimeirosNomes(usuarioAtual.nome, usuarioAtual.sobrenome);
+    document.getElementById('motorista-nome').textContent = nomeExibicao;
+    document.getElementById('profile-name').textContent = nomeExibicao;
     
     // Preencher dados na tela de Perfil
     const elPerfilNome = document.getElementById('perfil-nome');
@@ -60,10 +75,28 @@ function carregarDadosUsuario() {
         }
       }
       elPerfilNome.value = nomeCompleto;
-      document.getElementById('perfil-nome-titulo').textContent = nomeCompleto;
+      document.getElementById('perfil-nome-titulo').textContent = obterPrimeirosNomes(usuarioAtual.nome, usuarioAtual.sobrenome);
       document.getElementById('perfil-email').value = usuarioAtual.email || '';
       document.getElementById('perfil-telefone').value = usuarioAtual.telefone || 'Não informado';
       document.getElementById('perfil-cidade').value = usuarioAtual.cidade || 'Não informada';
+    }
+
+    // Preencher Código de Convite para o Motorista
+    const elCodigo = document.getElementById('motorista-codigo-convite');
+    if (elCodigo && usuarioAtual.id) {
+      const code = usuarioAtual.id.substring(0, 6).toUpperCase();
+      elCodigo.textContent = code;
+      
+      const btnCopiar = document.getElementById('btn-copiar-codigo-mot');
+      if (btnCopiar) {
+        btnCopiar.onclick = () => {
+          navigator.clipboard.writeText(code).then(() => {
+            if (typeof mostrarNotificacao === 'function') {
+              mostrarNotificacao('Código de convite copiado!', 'sucesso');
+            }
+          });
+        };
+      }
     }
   }
 }
@@ -168,15 +201,37 @@ function inicializarPerfil() {
 
       const reader = new FileReader();
       reader.onload = function(evt) {
-        const base64Str = evt.target.result;
-        
-        // Salvar localmente
-        localStorage.setItem('vantrack_avatar_' + usuarioAtual.id, base64Str);
-        
-        // Atualizar visualizações
-        carregarAvatar();
-        
-        mostrarNotificacao('Foto de perfil atualizada com sucesso!', 'sucesso');
+        const img = new Image();
+        img.src = evt.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const max_size = 150;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > max_size) {
+              height *= max_size / width;
+              width = max_size;
+            }
+          } else {
+            if (height > max_size) {
+              width *= max_size / height;
+              height = max_size;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          
+          localStorage.setItem('vantrack_avatar_' + usuarioAtual.id, compressedBase64);
+          carregarAvatar();
+          mostrarNotificacao('Foto de perfil atualizada com sucesso!', 'sucesso');
+        };
       };
       reader.readAsDataURL(file);
     });
@@ -438,14 +493,180 @@ function inicializarMenuMobile() {
   });
 }
 
+function inicializarMapaMotorista() {
+  const container = document.getElementById('mapa-motorista');
+  if (!container) return;
+
+  if (mapInstance) return;
+
+  // Remover placeholder de carregamento e ajustar layout
+  container.innerHTML = '';
+  container.style.display = 'block';
+
+  // Inicializar mapa Leaflet
+  mapInstance = L.map('mapa-motorista').setView([-23.5505, -46.6333], 13);
+  
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(mapInstance);
+
+  const vehicleIcon = L.divIcon({
+    className: 'custom-div-icon',
+    html: '<div style="position: relative;"><div class="van-pulse-ring"></div><div style="background: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: 2px solid #0f6cd5; position: relative; z-index: 10;"><i class="fas fa-van-shuttle" style="font-size: 20px; color: #0f6cd5;"></i></div></div>',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+  });
+
+  marcadorVeiculo = L.marker([-23.5505, -46.6333], { icon: vehicleIcon }).addTo(mapInstance);
+  marcadorVeiculo.bindPopup('<strong>Sua Posição</strong><br>Obtendo GPS...').openPopup();
+
+  iniciarRastreamentoVeiculo();
+}
+
+function iniciarRastreamentoVeiculo() {
+  if (!navigator.geolocation) {
+    console.warn('Geolocalização não suportada no navegador');
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      if (mapInstance && marcadorVeiculo) {
+        marcadorVeiculo.setLatLng([lat, lng]);
+        mapInstance.setView([lat, lng]);
+        
+        marcadorVeiculo.setPopupContent(`<strong>Sua Van</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lng.toFixed(4)}`);
+      }
+    },
+    (err) => {
+      console.error('Erro de GPS do motorista:', err);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+async function carregarAlunosEChecklist() {
+  try {
+    const res = await fetchAPI('GET', '/dashboard/motorista');
+    if (!res) return;
+
+    // 1. Render Checklist
+    const listChecklist = document.getElementById('checklist-alunos');
+    if (listChecklist) {
+      listChecklist.innerHTML = '';
+      let confirmados = 0;
+      
+      if (!res.alunos_hoje || res.alunos_hoje.length === 0) {
+        listChecklist.innerHTML = '<li class="aluno-item"><span class="aluno-nome" style="color: #64748b;">Nenhum aluno hoje</span></li>';
+      } else {
+        res.alunos_hoje.forEach(aluno => {
+          const li = document.createElement('li');
+          li.className = 'aluno-item';
+          
+          let statusText = 'Aguardando';
+          let iconClass = 'fa-question-circle';
+          let badgeColor = '#6b7280';
+          
+          if (aluno.vai_embarcar === 1 || aluno.vai_embarcar === true) {
+            statusText = 'Confirmado';
+            iconClass = 'fa-check-circle';
+            badgeColor = '#10b981';
+            confirmados++;
+          } else if (aluno.vai_embarcar === 0 || aluno.vai_embarcar === false) {
+            statusText = 'Não vai';
+            iconClass = 'fa-times-circle';
+            badgeColor = '#ef4444';
+          }
+          
+          li.innerHTML = `
+            <span class="aluno-nome" style="font-weight: 600; color: #1e293b;">${aluno.aluno_nome}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge" style="background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas ${iconClass}"></i> ${statusText}
+              </span>
+            </div>
+          `;
+          listChecklist.appendChild(li);
+        });
+      }
+      
+      const countEl = document.getElementById('confirmar-count');
+      if (countEl) countEl.textContent = confirmados;
+    }
+
+    // 2. Render Alunos Table
+    const tableBody = document.getElementById('alunos-table-body');
+    if (tableBody) {
+      tableBody.innerHTML = '';
+      if (!res.alunos_hoje || res.alunos_hoje.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b;">Nenhum aluno cadastrado nesta rota</td></tr>';
+      } else {
+        res.alunos_hoje.forEach(aluno => {
+          const tr = document.createElement('tr');
+          
+          let statusText = 'Pendente';
+          let statusStyle = 'background: #6b7280; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
+          
+          if (aluno.vai_embarcar === 1 || aluno.vai_embarcar === true) {
+            statusText = 'Confirmado';
+            statusStyle = 'background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
+          } else if (aluno.vai_embarcar === 0 || aluno.vai_embarcar === false) {
+            statusText = 'Não Vai';
+            statusStyle = 'background: #ef4444; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
+          }
+
+          let pagText = 'Pendente';
+          let pagStyle = 'background: #f59e0b; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
+          if (aluno.status_pagamento === 'pago') {
+            pagText = 'Pago';
+            pagStyle = 'background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
+          } else if (aluno.status_pagamento === 'atrasado') {
+            pagText = 'Atrasado';
+            pagStyle = 'background: #ef4444; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;';
+          }
+          
+          const telefone = '(11) 98' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000);
+          const endereco = 'Rua das Palmeiras, ' + Math.floor(10 + Math.random() * 500) + ' - Centro';
+          
+          tr.innerHTML = `
+            <td style="font-weight: 600; color: #1e293b;">${aluno.aluno_nome}</td>
+            <td>${telefone}</td>
+            <td>${endereco}</td>
+            <td><span style="${statusStyle}">${statusText}</span></td>
+            <td><span style="${pagStyle}">${pagText}</span></td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao carregar checklist e alunos:', err);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   carregarDadosUsuario();
   trocarSecao('inicio');
   inicializarPerfil();
   inicializarMenuMobile();
+  inicializarMapaMotorista();
+  carregarAlunosEChecklist();
+  
+  // Atualizar a cada 30 segundos
+  setInterval(carregarAlunosEChecklist, 30000);
   
   const logoutBtnPerfil = document.getElementById('btn-logout-perfil');
   if (logoutBtnPerfil) {
     logoutBtnPerfil.addEventListener('click', executeLogout);
   }
 });
+
+window.addEventListener('beforeunload', () => {
+  if (watchId) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+});
+

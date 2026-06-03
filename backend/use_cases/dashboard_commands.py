@@ -44,11 +44,25 @@ class ObtenerDashboardMotorista:
                     inscricao['aluno_id'], rota['id'], date.today()
                 )
                 aluno = self.usuario_repository.buscar_por_id(inscricao['aluno_id'])
+                
+                # Buscar status de pagamento da mensalidade atual
+                hoje = date.today()
+                query_pag = """
+                    SELECT status FROM pagamentos 
+                    WHERE aluno_id = %s AND motorista_id = %s AND mes_referencia = %s AND ano_referencia = %s
+                    LIMIT 1
+                """
+                pagamento = self.usuario_repository.db.execute_query_one(
+                    query_pag, (inscricao['aluno_id'], motorista_id, hoje.month, hoje.year)
+                )
+                status_pagamento = pagamento['status'] if pagamento else 'pendente'
+                
                 alunos_hoje.append({
                     'aluno_id': inscricao['aluno_id'],
                     'aluno_nome': aluno['nome'],
                     'vai_embarcar': presenca['vai_embarcar'] if presenca else None,
-                    'rota_id': rota['id']
+                    'rota_id': rota['id'],
+                    'status_pagamento': status_pagamento
                 })
 
         mensagens_nao_lidas = self.mensagem_repository.contar_nao_lidas_por_usuario(motorista_id)

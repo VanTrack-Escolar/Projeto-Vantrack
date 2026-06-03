@@ -916,27 +916,182 @@ body {
 .mapa-rastreamento {
   min-height: 300px;
   background-color: #f8f9fa;
-  border-radius: 10px;
+  border-radius: 16px;
+  position: relative;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+}
+
+.map-loading-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  border: 1px solid var(--color-border);
+  gap: 12px;
+  background-color: #f8fafc;
+  z-index: 1001;
+  font-family: inherit;
+  border-radius: 16px;
 }
 
-.mapa-rastreamento i {
-  font-size: 4rem;
-  color: var(--color-text-light);
-  animation: mapPulse 2s infinite;
+/* Pulsating Radar Effect for Leaflet Markers */
+.van-pulse-ring {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid rgba(15, 108, 213, 0.4);
+  animation: vanRadarPulse 2s infinite ease-out;
+  pointer-events: none;
+  top: -10px;
+  left: -10px;
+  box-sizing: border-box;
 }
 
-.mapa-rastreamento p {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  font-weight: 600;
+@keyframes vanRadarPulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
 }
+
+/* Modernize Leaflet Zoom Controls */
+.leaflet-bar {
+  border: none !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #334155 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  transition: all 0.2s ease !important;
+  font-weight: bold;
+}
+
+.leaflet-bar a:hover {
+  background-color: #ffffff !important;
+  color: var(--color-blue) !important;
+  transform: scale(1.05);
+}
+
+.leaflet-bar a.leaflet-disabled {
+  background-color: #f8fafc !important;
+  color: #94a3b8 !important;
+}
+
+/* Glassmorphism Floating Route Panel */
+.floating-route-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 22px;
+  width: 300px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  animation: panelSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes panelSlideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.pulse-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #0284c7;
+  display: inline-block;
+  animation: dotPulse 1.8s infinite ease-in-out;
+}
+
+.pulse-status-dot.conectado {
+  background-color: #10b981;
+  animation-name: dotPulseConectado;
+}
+
+.pulse-status-dot.desconectado {
+  background-color: #ef4444;
+  animation-name: dotPulseDesconectado;
+}
+
+@keyframes dotPulse {
+  0% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.5);
+  }
+  70% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 6px rgba(2, 132, 199, 0);
+  }
+  100% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
+  }
+}
+
+@keyframes dotPulseConectado {
+  0% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  70% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes dotPulseDesconectado {
+  0% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+  70% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
 
 .status-card {
   min-height: 280px;
@@ -1217,31 +1372,84 @@ body {
 .dia-calendario {
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+  background-color: #ffffff;
+  border-radius: 12px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  color: #334155;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+  position: relative;
 }
 
-.dia-calendario:hover {
+.dia-calendario:hover:not(.desativado):not(.fim-de-semana) {
   border-color: var(--color-blue);
   background-color: #f0f7ff;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 15px -3px rgba(15, 108, 213, 0.1), 0 4px 6px -2px rgba(15, 108, 213, 0.05);
+  z-index: 2;
 }
 
 .dia-calendario.presente {
-  background-color: #e8f5e9;
-  border-color: var(--color-success);
-  color: var(--color-success);
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #059669;
+  font-weight: 700;
+}
+
+.dia-calendario.presente::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #059669;
 }
 
 .dia-calendario.ausente {
-  background-color: #ffebee;
-  border-color: var(--color-danger);
-  color: var(--color-danger);
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.dia-calendario.ausente::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #dc2626;
+}
+
+.dia-calendario.fim-de-semana {
+  background-color: #f8fafc;
+  color: #94a3b8;
+  border-style: dashed;
+  border-color: #e2e8f0;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+.dia-calendario.desativado {
+  background-color: #f8fafc;
+  border-color: #f8fafc;
+  color: #cbd5e1;
+  cursor: default;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.dia-calendario.hoje {
+  border: 2px solid var(--color-blue);
+  box-shadow: 0 0 0 3px rgba(15, 108, 213, 0.15);
 }
 
 .chat-motorista-card {
@@ -1445,4 +1653,52 @@ body {
   }
 }
 
+/* Quick Actions buttons below tracking map */
+.btn-acao-rapida {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
 
+.btn-acao-rapida:hover {
+  transform: translateY(-2.5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06) !important;
+  background-color: #fcfcfc !important;
+}
+
+.btn-acao-rapida:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+@keyframes pulseDot {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.6);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 8px rgba(2, 132, 199, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
+  }
+}
+
+@media (max-width: 992px) {
+  .rastreamento-widgets-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+}
+
+@keyframes userLocationPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(2, 132, 199, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
+  }
+}

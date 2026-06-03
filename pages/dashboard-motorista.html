@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../assets/css/dashboard.css?v=1.4" />
   <link rel="stylesheet" href="../assets/css/pagamentos.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
@@ -110,9 +111,11 @@
                 <h3>Rota Otimizada</h3>
               </div>
               <div class="card-body">
-                <div class="mapa-placeholder">
-                  <i class="fas fa-map"></i>
-                  <p>Mapa da rota será exibido aqui</p>
+                <div id="mapa-motorista" class="mapa-rastreamento" style="height: 250px; width: 100%; border-radius: 10px; margin-bottom: 12px; position: relative;">
+                  <div class="map-loading-placeholder">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.8rem; color: var(--color-blue);"></i>
+                    <p style="margin: 0; font-weight: 600; font-size: 0.85rem; color: #64748b;">Carregando rota...</p>
+                  </div>
                 </div>
                 <div class="rota-info">
                   <div class="info-item">
@@ -170,6 +173,7 @@
                       <th>Telefone Responsável</th>
                       <th>Endereço Coleta</th>
                       <th>Status Hoje</th>
+                      <th>Pagamento</th>
                     </tr>
                   </thead>
                   <tbody id="alunos-table-body">
@@ -285,6 +289,13 @@
               <div class="card-body" style="font-size: 14px; display: flex; flex-direction: column; gap: 8px; color: #4b5563;">
                 <div><span style="font-weight: 600; color: #111827;">Placa:</span> <span id="info-veiculo-placa">Carregando...</span></div>
                 <div><span style="font-weight: 600; color: #111827;">Capacidade:</span> <span id="info-veiculo-capacidade">Carregando...</span></div>
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e5e7eb;">
+                  <span style="font-weight: 600; color: #111827;">Código de Convite (Alunos):</span>
+                  <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+                    <span id="motorista-codigo-convite" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-blue); background: #e0f2fe; padding: 4px 12px; border-radius: 6px; letter-spacing: 1px;">------</span>
+                    <button id="btn-copiar-codigo-mot" style="background: transparent; border: none; color: #0f6cd5; cursor: pointer; padding: 4px;" title="Copiar Código"><i class="fas fa-copy"></i></button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -341,6 +352,7 @@
 
   <div class="container-notificacoes"></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="../assets/js/config.js?v=1.1"></script>
   <script src="../assets/js/validators.js"></script>

@@ -26,10 +26,8 @@ const ChatRealtime = {
     }
 
     socketChat = io('http://localhost:5000/chat', {
-      auth: {
-        token: token
-      },
       query: {
+        token: token,
         usuario_id: usuarioID
       },
       reconnection: true,
@@ -167,6 +165,20 @@ const ChatRealtime = {
     });
 
     inputMensagem.value = '';
+  },
+
+  enviarMensagemRapida: (texto) => {
+    if (!socketChat || !ChatRealtime.motoristaId) {
+      if (typeof mostrarNotificacao === 'function') {
+        mostrarNotificacao('Atenção: Nenhum motorista vinculado para enviar mensagens.', 'aviso');
+      }
+      return;
+    }
+
+    socketChat.emit('enviar_mensagem', {
+      destinatario_id: ChatRealtime.motoristaId,
+      texto: texto
+    });
   },
 
   inscreverConversa: (motorista_id) => {

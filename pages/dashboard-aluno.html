@@ -74,114 +74,215 @@
 
       <div class="content-area">
         <section id="rastreamento-section" class="dashboard-section active">
-          <div class="section-header">
-            <h1>Rastreamento em Tempo Real</h1>
-            <p>Veja onde a van está agora</p>
+          <div class="section-header" style="margin-bottom: 25px;">
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: #1e293b;">Rastreamento em Tempo Real</h1>
+            <p style="color: #64748b; font-size: 0.95rem;">Monitore o trajeto e a localização da van escolar ao vivo</p>
           </div>
 
-          <div class="cards-grid rastreamento-grid">
-            <div class="card rastreamento-card">
-              <div class="card-body">
-                <div id="mapa-rastreamento" class="mapa-rastreamento-live"></div>
-                <div class="mapa-info">
-                  <span id="status-conexao" class="conexao-status"><i class="fas fa-circle"></i> Conectando...</span>
-                </div>
-              </div>
-            </div>
+          <div class="cards-grid" style="display: block; width: 100%;">
+            <div class="card rastreamento-card" style="width: 100%; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); background: white; overflow: hidden;">
+              <div class="card-body" style="padding: 24px; position: relative; display: flex; flex-direction: column; gap: 24px; background: white;">
+                
+                <!-- Wrapper do Mapa e Painel Flutuante -->
+                <div style="position: relative; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: inset 0 0 10px rgba(0,0,0,0.02);">
+                  <!-- Map Container -->
+                  <div id="mapa-rastreamento" class="mapa-rastreamento" style="height: 500px; width: 100%; position: relative;">
+                    <div class="map-loading-placeholder">
+                      <i class="fas fa-spinner fa-spin" style="font-size: 2.2rem; color: var(--color-blue);"></i>
+                      <p style="margin: 0; font-weight: 600; font-size: 0.95rem; color: #64748b;">Carregando mapa interativo...</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Painel de Informações Flutuante (Estilo Uber/Waze) -->
+                  <div class="floating-route-panel">
+                    <!-- Cabeçalho: Status de monitoramento -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Painel da Rota</span>
+                      <span id="status-conexao" style="font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: #f0f9ff; color: #0369a1; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e0f2fe;">
+                        <span class="pulse-status-dot"></span> Conectando...
+                      </span>
+                    </div>
 
-            <div class="status-container">
-              <div class="card status-card">
-                <div class="card-header">
-                  <i class="fas fa-info-circle"></i>
-                  <h3>Status Atual</h3>
-                </div>
-                <div class="card-body status-body">
-                  <div class="status-badge status-aguardando">
-                    <i class="fas fa-hourglass-start"></i>
-                    <span id="status-texto">Aguardando saída</span>
-                  </div>
-                  <div class="status-detalhes">
-                    <div class="detalhe-item">
-                      <span class="label">Motorista:</span>
-                      <span class="value" id="motorista-nome-status">João da Silva</span>
-                    </div>
-                    <div class="detalhe-item">
-                      <span class="label">Próxima Parada:</span>
-                      <span class="value" id="proxima-parada">Rua A, 123</span>
-                    </div>
-                    <div class="detalhe-item">
-                      <span class="label">Tempo Estimado:</span>
-                      <span class="value" id="tempo-estimado">5 min</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    <!-- Detalhes do Motorista -->
+                    <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: #e0f2fe; color: #0284c7; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                          <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px;">
+                          <span style="font-size: 0.7rem; color: #64748b; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">Motorista</span>
+                          <span id="motorista-nome-status" style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">Carregando...</span>
+                        </div>
+                      </div>
 
-              <div class="card presenca-card">
-                <div class="card-header">
-                  <i class="fas fa-check-circle"></i>
-                  <h3>Confirmar Presença</h3>
-                </div>
-                <div class="card-body presenca-body">
-                  <p class="presenca-texto">Vou para a escola hoje?</p>
-                  <div class="toggle-presenca">
-                    <button id="btn-vai" class="btn-presenca btn-vai-sim active">
-                      <i class="fas fa-check"></i>
-                      <span>Sim, vou!</span>
-                    </button>
-                    <button id="btn-nao-vai" class="btn-presenca btn-vai-nao">
-                      <i class="fas fa-times"></i>
-                      <span>Não vou</span>
-                    </button>
+                      <!-- Detalhes do Veículo -->
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: #ecfdf5; color: #059669; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">
+                          <i class="fas fa-bus"></i>
+                        </div>
+                        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px;">
+                          <span style="font-size: 0.7rem; color: #64748b; display: block; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">Veículo</span>
+                          <span id="veiculo-modelo-placa" style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">Carregando...</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Detalhes da Rota / Escola -->
+                    <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; font-size: 0.8rem; color: #475569; display: flex; flex-direction: column; gap: 6px;">
+                      <div style="display: flex; justify-content: space-between;"><span style="font-weight: 600; color: #64748b;">Horário de Saída:</span> <span id="horario-saida-rastreamento" style="font-weight: 700; color: #1e293b;">--:--</span></div>
+                      <div style="display: flex; justify-content: space-between;"><span style="font-weight: 600; color: #64748b;">Escola:</span> <span style="font-weight: 700; color: #1e293b; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Colégio Integral</span></div>
+                    </div>
                   </div>
-                  <span class="presenca-confirmado" id="confirmacao-msg"></span>
                 </div>
-              </div>
+
+                <!-- Nova Área Abaixo do Mapa: Progresso de Viagem e Ações Rápidas -->
+                <div class="rastreamento-widgets-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; padding-top: 8px; align-items: start; background: white;">
+                  
+                  <!-- Esquerda: Progresso Visual do Trajeto -->
+                  <div style="background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; padding: 22px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <i class="fas fa-route" style="color: var(--primary-blue); font-size: 1.1rem;"></i>
+                      <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">Progresso da Viagem</h4>
+                    </div>
+                    
+                    <div style="position: relative; display: flex; flex-direction: column; gap: 24px; padding-left: 28px; margin-top: 5px;">
+                      <!-- Linha do tempo visual -->
+                      <div style="position: absolute; left: 9px; top: 12px; bottom: 12px; width: 3px; background: #e2e8f0; border-radius: 2px;"></div>
+                      
+                      <!-- Ponto 1: Saída da Van -->
+                      <div style="position: relative;">
+                        <div style="position: absolute; left: -25px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; border: 3px solid #bbf7d0; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                          <span style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">Saída da Garagem</span>
+                          <span style="font-size: 0.75rem; color: #15803d; font-weight: 700;">Realizado</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #64748b;">A van iniciou o trajeto diário.</p>
+                      </div>
+
+                      <!-- Ponto 2: Próximas Paradas (Em Trânsito) -->
+                      <div style="position: relative;">
+                        <div class="pulse-status-dot conectado" style="position: absolute; left: -24px; top: 5px; width: 8px; height: 8px; border-radius: 50%; z-index: 2;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                          <span style="font-size: 0.85rem; font-weight: 700; color: #0284c7;">A Caminho / Em Rota</span>
+                          <span style="font-size: 0.75rem; color: #0284c7; font-weight: 700; background: #e0f2fe; padding: 2px 8px; border-radius: 12px; border: 1px solid #bae6fd;">Em Andamento</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #475569;">A van está a caminho do seu ponto de coleta.</p>
+                      </div>
+
+                      <!-- Ponto 3: Entrega na Escola -->
+                      <div style="position: relative;">
+                        <div style="position: absolute; left: -25px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; border: 3px solid #e2e8f0;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                          <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">Escola (Colégio Integral)</span>
+                          <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;" id="eta-escola">Prev: --:--</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #94a3b8;">Desembarque previsto na escola de destino.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Direita: Ações Rápidas -->
+                  <div style="background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; padding: 22px; display: flex; flex-direction: column; gap: 16px; height: 100%; box-sizing: border-box;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <i class="fas fa-bolt" style="color: #eab308; font-size: 1.1rem;"></i>
+                      <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">Mensagens Rápidas</h4>
+                    </div>
+                    <p style="margin: 0; font-size: 0.8rem; color: #64748b; font-weight: 500; line-height: 1.4;">Avise o motorista em tempo real com um clique. A mensagem será enviada no chat instantaneamente.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
+                      <button class="btn-acao-rapida" data-msg="Já estou no ponto/portaria aguardando!" style="background: white; border: 1.5px solid #10b981; color: #047857; padding: 11px 16px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-align: left; font-family: inherit;">
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.1rem;"></i>
+                        <span>Já estou pronto(a) / Aguardando</span>
+                      </button>
+                      
+                      <button class="btn-acao-rapida" data-msg="Estou descendo! Atraso de 2 minutos." style="background: white; border: 1.5px solid #f59e0b; color: #b45309; padding: 11px 16px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-align: left; font-family: inherit;">
+                        <i class="fas fa-clock" style="color: #f59e0b; font-size: 1.1rem;"></i>
+                        <span>Atraso curto (2 minutos)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
             </div>
           </div>
         </section>
 
         <section id="frequencia-section" class="dashboard-section">
-          <div class="section-header">
-            <h1>Frequência Rápida</h1>
-            <p>Controle sua presença diária</p>
+          <div class="section-header" style="margin-bottom: 25px;">
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: #1e293b;">Frequência Rápida</h1>
+            <p style="color: #64748b; font-size: 0.95rem;">Visualize seu histórico de frequência e marque sua presença clicando diretamente nos dias do calendário</p>
           </div>
 
-          <div class="cards-grid">
-            <div class="card frequencia-card">
-              <div class="card-body">
-                <div class="frequencia-toggle-grande">
-                  <h2>Vou para a escola hoje?</h2>
-                  <button id="toggle-presenca-grande" class="toggle-button" data-status="sim">
-                    <div class="toggle-circle"></div>
-                  </button>
-                  <span id="toggle-label">Confirmado: SIM</span>
+          <div class="cards-grid" style="display: block; width: 100%;">
+            <div class="card calendario-card" style="max-width: 800px; margin: 0 auto; width: 100%; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); background: white;">
+              <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 20px;">
+                <i class="fas fa-calendar-alt" style="color: var(--primary-blue); font-size: 1.2rem;"></i>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b;">Histórico de Presença</h3>
+              </div>
+              <div class="card-body" style="padding: 24px;">
+                <!-- Resumo de Frequência Dinâmico -->
+                <div class="calendario-resumo" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 25px;">
+                  <div class="resumo-item" style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                    <div style="background: #10b981; color: white; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                      <span style="font-size: 0.75rem; color: #047857; font-weight: 600; text-transform: uppercase;">Presenças</span>
+                      <h4 id="calc-presencas" style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #064e3b;">0</h4>
+                    </div>
+                  </div>
+                  <div class="resumo-item" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                    <div style="background: #ef4444; color: white; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                      <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div>
+                      <span style="font-size: 0.75rem; color: #b91c1c; font-weight: 600; text-transform: uppercase;">Faltas</span>
+                      <h4 id="calc-faltas" style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #7f1d1d;">0</h4>
+                    </div>
+                  </div>
+                  <div class="resumo-item" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                    <div style="background: #3b82f6; color: white; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                      <i class="fas fa-percentage"></i>
+                    </div>
+                    <div>
+                      <span style="font-size: 0.75rem; color: #1d4ed8; font-weight: 600; text-transform: uppercase;">Frequência</span>
+                      <h4 id="calc-taxa" style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1e3a8a;">100%</h4>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div class="card calendario-card">
-              <div class="card-header">
-                <i class="fas fa-calendar"></i>
-                <h3>Histórico de Presença</h3>
-              </div>
-              <div class="card-body">
-                <div class="calendario-presenca" id="calendario-presenca">
-                  <div class="mes-header">
+                <div class="calendario-presenca" id="calendario-presenca" style="width: 100%;">
+                  <div class="mes-header" style="margin-bottom: 15px;">
                     <button class="btn-mes-anterior"><i class="fas fa-chevron-left"></i></button>
-                    <span id="mes-ano">Abril 2026</span>
+                    <span id="mes-ano" style="font-weight: 700; color: #1e293b;">Abril 2026</span>
                     <button class="btn-mes-proximo"><i class="fas fa-chevron-right"></i></button>
                   </div>
-                  <div class="dias-semana">
-                    <div class="dia-semana">Seg</div>
-                    <div class="dia-semana">Ter</div>
-                    <div class="dia-semana">Qua</div>
-                    <div class="dia-semana">Qui</div>
-                    <div class="dia-semana">Sex</div>
-                    <div class="dia-semana">Sab</div>
-                    <div class="dia-semana">Dom</div>
+                  <div class="dias-semana" style="margin-bottom: 10px;">
+                    <div class="dia-semana" style="font-weight: 600; color: #64748b;">Seg</div>
+                    <div class="dia-semana" style="font-weight: 600; color: #64748b;">Ter</div>
+                    <div class="dia-semana" style="font-weight: 600; color: #64748b;">Qua</div>
+                    <div class="dia-semana" style="font-weight: 600; color: #64748b;">Qui</div>
+                    <div class="dia-semana" style="font-weight: 600; color: #64748b;">Sex</div>
+                    <div class="dia-semana" style="font-weight: 600; color: #64748b;">Sab</div>
+                    <div class="dia-semana" style="font-weight: 600; color: #64748b;">Dom</div>
                   </div>
                   <div class="dias-calendario" id="dias-calendario"></div>
+                  
+                  <!-- Legenda do Calendário -->
+                  <div class="calendario-legenda" style="display: flex; justify-content: center; gap: 24px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; font-weight: 600;">
+                      <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span>
+                      <span>Vou na Van (Presença)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; font-weight: 600;">
+                      <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span>
+                      <span>Não vou (Falta Justificada)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; font-weight: 600;">
+                      <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f1f5f9; border: 1px solid #cbd5e1;"></span>
+                      <span>Sem registro / Fim de semana</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -234,7 +335,7 @@
           </div>
 
           <div class="cards-grid">
-            <div class="card list-card" style="grid-column: 1 / -1;">
+            <div class="card list-card" style="grid-column: span 2;">
               <div class="card-body">
                 <table class="alunos-table">
                   <thead>
@@ -256,110 +357,175 @@
                 </table>
               </div>
             </div>
+
+            <div class="card metodos-pagamento-card" style="grid-column: span 1; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); border: 1px solid #e5e7eb;">
+              <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px;">
+                <i class="fas fa-credit-card" style="color: #0f6cd5; font-size: 1.2rem;"></i>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #111827;">Formas de Pagamento</h3>
+              </div>
+              <div class="card-body" style="padding: 0;">
+                <div id="lista-cartoes-salvos" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+                  <!-- Cartões salvos injetados via JS -->
+                  <div style="text-align: center; padding: 20px; color: #64748b; font-size: 0.9rem;">
+                    <i class="fas fa-info-circle" style="margin-bottom: 6px; display: block; font-size: 1.5rem; color: #cbd5e1;"></i>
+                    Nenhum cartão cadastrado
+                  </div>
+                </div>
+                <button class="btn-primary-checkout" id="btn-adicionar-cartao-lista" style="padding: 10px 14px; font-size: 0.9rem; border-radius: 8px; font-family: inherit;">
+                  <i class="fas fa-plus"></i> Adicionar Cartão
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
         <section id="perfil-section" class="dashboard-section">
-          <div class="section-header">
-            <h1>Meu Perfil</h1>
-            <p>Gerencie suas informações e preferências</p>
+          <div class="section-header" style="margin-bottom: 30px;">
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: #1e293b;">Meu Perfil</h1>
+            <p style="color: #64748b; font-size: 0.95rem;">Gerencie suas informações, preferências e rota escolar</p>
           </div>
 
-          <div class="cards-grid config-grid">
-            <div class="card config-card" style="grid-column: span 1;">
-              <div class="card-header">
-                <i class="fas fa-map-pin"></i>
-                <h3>Endereços da Rota</h3>
+          <div class="perfil-layout" style="display: grid; grid-template-columns: 1.2fr 2fr; gap: 30px; align-items: start; max-width: 1100px; margin: 0 auto;">
+            
+            <!-- COLUNA ESQUERDA: DETALHES PESSOAIS DO ALUNO -->
+            <div class="card perfil-card-esq" style="background: white; border-radius: 20px; padding: 36px 28px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; text-align: center;">
+              
+              <!-- Uploader Interativo de Foto de Perfil -->
+              <div class="avatar-uploader" style="position: relative; width: 110px; height: 110px; cursor: pointer; margin-bottom: 18px;" id="avatar-uploader-container" title="Clique para alterar sua foto de perfil">
+                  <img id="perfil-foto-preview" src="../assets/img/aluno.png" alt="Foto de Perfil" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-blue); box-shadow: 0 4px 12px rgba(15, 108, 213, 0.15);" />
+                  <div style="position: absolute; bottom: 4px; right: 4px; background: var(--primary-blue); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); border: 2px solid white;">
+                      <i class="fas fa-camera"></i>
+                  </div>
+                  <input type="file" id="perfil-foto-upload" style="display: none;" accept="image/*" />
               </div>
-              <div class="card-body" style="display: flex; flex-direction: column; gap: 14px;">
-                <div class="config-item" style="margin-bottom: 0;">
-                  <label style="font-weight: 700; color: var(--color-text-primary); font-size: 0.9rem;">Endereço de Coleta (Ida):</label>
-                  <p id="endereco-coleta-atual" style="margin: 4px 0 0 0; color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600;">Carregando...</p>
-                </div>
-                <div class="config-item" style="margin-bottom: 0;">
-                  <label style="font-weight: 700; color: var(--color-text-primary); font-size: 0.9rem;">Endereço de Entrega (Volta):</label>
-                  <p id="endereco-entrega-atual" style="margin: 4px 0 0 0; color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600;">Carregando...</p>
-                </div>
-                <button class="btn-small btn-editar" id="btn-editar-endereco" style="margin-top: 8px;">Editar Endereços</button>
-              </div>
-            </div>
 
-            <div class="card config-card">
-              <div class="card-header">
-                <i class="fas fa-lock"></i>
-                <h3>Segurança</h3>
-              </div>
-              <div class="card-body">
-                <div class="config-item">
-                  <button class="btn-small btn-seguranca" id="btn-alterar-senha">Alterar Senha</button>
-                </div>
-              </div>
-            </div>
+              <h2 id="perfil-nome-titulo" style="margin: 0 0 4px 0; font-size: 1.4rem; font-weight: 700; color: #1e293b;">Aluno</h2>
+              <span style="background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 28px;">Estudante</span>
 
-            <div class="card config-card">
-              <div class="card-header">
-                <i class="fas fa-bell"></i>
-                <h3>Notificações</h3>
-              </div>
-              <div class="card-body">
-                <div class="config-checkbox">
-                  <label>
-                    <input type="checkbox" checked />
-                    Alertas de status da van
-                  </label>
-                </div>
-                <div class="config-checkbox">
-                  <label>
-                    <input type="checkbox" checked />
-                    Mensagens do motorista
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div class="card perfil-card" style="grid-column: span 3; width: 100%; max-width: 900px; margin: 20px auto 0 auto; padding: 40px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); border-radius: 16px; background: white; border: 1px solid #e5e7eb;">
-              <div class="card-header" style="display: flex; align-items: center; gap: 18px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
-                <!-- Uploader Interativo de Foto de Perfil -->
-                <div class="avatar-uploader" style="position: relative; width: 70px; height: 70px; cursor: pointer;" id="avatar-uploader-container" title="Clique para alterar sua foto de perfil">
-                    <img id="perfil-foto-preview" src="../assets/img/aluno.png" alt="Foto de Perfil" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-blue);" />
-                    <div style="position: absolute; bottom: 0; right: 0; background: var(--primary-blue); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <input type="file" id="perfil-foto-upload" style="display: none;" accept="image/*" />
+              <!-- Inputs de informações pessoais (desabilitados por padrão) -->
+              <div style="width: 100%; display: flex; flex-direction: column; gap: 16px; text-align: left; margin-bottom: 30px;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 5px;">Nome Completo</label>
+                  <input type="text" id="perfil-nome" class="form-control" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 11px 14px; background-color: #f8fafc; font-size: 0.9rem; color: #334155; font-family: inherit; font-weight: 500; box-sizing: border-box;" disabled />
                 </div>
                 <div>
-                  <h3 id="perfil-nome-titulo" style="margin: 0; font-size: 22px; font-weight: 600; color: #111827;">Aluno</h3>
-                  <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">Estudante Inscrito</p>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 5px;">E-mail</label>
+                  <input type="email" id="perfil-email" class="form-control" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 11px 14px; background-color: #f8fafc; font-size: 0.9rem; color: #334155; font-family: inherit; font-weight: 500; box-sizing: border-box;" disabled />
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 5px;">Telefone</label>
+                  <input type="text" id="perfil-telefone" class="form-control" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 11px 14px; background-color: #f8fafc; font-size: 0.9rem; color: #334155; font-family: inherit; font-weight: 500; box-sizing: border-box;" disabled />
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 5px;">Cidade</label>
+                  <input type="text" id="perfil-cidade" class="form-control" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 11px 14px; background-color: #f8fafc; font-size: 0.9rem; color: #334155; font-family: inherit; font-weight: 500; box-sizing: border-box;" disabled />
                 </div>
               </div>
-              <div class="card-body" style="padding: 30px 0;">
-                <div class="perfil-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                  <div>
-                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">Nome Completo</label>
-                    <input type="text" id="perfil-nome" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
-                  </div>
-                  <div>
-                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">E-mail</label>
-                    <input type="email" id="perfil-email" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
-                  </div>
-                  <div>
-                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">Telefone</label>
-                    <input type="text" id="perfil-telefone" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
-                  </div>
-                  <div>
-                    <label style="font-weight: 500; font-size: 14px; color: #4b5563; display: block; margin-bottom: 8px;">Cidade</label>
-                    <input type="text" id="perfil-cidade" class="form-control" style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; background-color: #f9fafb; font-size: 15px;" disabled />
-                  </div>
-                </div>
-              </div>
-              <div class="card-footer" style="border-top: 1px solid #eee; padding-top: 25px; display: flex; justify-content: space-between; align-items: center; gap: 30px; flex-wrap: wrap;">
-                <button class="btn btn-secondary-small" id="btn-editar-perfil" style="background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 15px; transition: all 0.2s;">Editar Dados</button>
-                <button class="btn-logout" id="btn-logout-perfil" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 15px; transition: all 0.2s;">
+
+              <!-- Botões de ação -->
+              <div style="width: 100%; display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn btn-secondary-small" id="btn-editar-perfil" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; font-family: inherit; width: 100%; box-sizing: border-box; text-align: center;">Editar Dados</button>
+                <button class="btn-logout" id="btn-logout-perfil" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; font-family: inherit; width: 100%; box-sizing: border-box;">
                   <i class="fas fa-sign-out-alt"></i>
                   <span>Sair da Conta</span>
                 </button>
               </div>
+
             </div>
+
+            <!-- COLUNA DIREITA: CONFIGURAÇÕES E ROTAS -->
+            <div class="perfil-config-dir" style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
+              
+              <!-- CARD: Endereços da Rota (Visual Journey) -->
+              <div class="card config-card" style="background: white; border-radius: 20px; padding: 28px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; width: 100%; box-sizing: border-box;">
+                <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 20px;">
+                  <i class="fas fa-map-marked-alt" style="color: var(--primary-blue); font-size: 1.25rem;"></i>
+                  <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b;">Endereços da Rota</h3>
+                </div>
+                
+                <div class="card-body" style="padding: 0;">
+                  <!-- Percurso visual do trajeto -->
+                  <div style="display: flex; flex-direction: column; gap: 20px; position: relative; padding-left: 24px; margin-bottom: 24px;">
+                    <!-- Linha pontilhada conectora -->
+                    <div style="position: absolute; left: 7px; top: 12px; bottom: 12px; width: 2px; border-left: 2px dashed #cbd5e1;"></div>
+                    
+                    <!-- Coleta (Ida) -->
+                    <div style="position: relative;">
+                      <div style="position: absolute; left: -24px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: #22c55e; border: 3px solid #bbf7d0;"></div>
+                      <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Endereço de Coleta (Ida)</span>
+                      <p id="endereco-coleta-atual" style="margin: 4px 0 0 0; color: #334155; font-size: 0.95rem; font-weight: 600; line-height: 1.4;">Carregando...</p>
+                    </div>
+
+                    <!-- Entrega (Volta) -->
+                    <div style="position: relative;">
+                      <div style="position: absolute; left: -24px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: #ef4444; border: 3px solid #fecaca;"></div>
+                      <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Endereço de Entrega (Volta)</span>
+                      <p id="endereco-entrega-atual" style="margin: 4px 0 0 0; color: #334155; font-size: 0.95rem; font-weight: 600; line-height: 1.4;">Carregando...</p>
+                    </div>
+                  </div>
+
+                  <button class="btn-primary-checkout" id="btn-editar-endereco" style="padding: 11px 20px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; font-family: inherit; width: 100%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(15, 108, 213, 0.15);">
+                    <i class="fas fa-edit"></i>
+                    <span>Atualizar Endereços</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- DOIS SUB-CARDS EM GRID: VINCULAÇÃO E SEGURANÇA -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Vincular Motorista -->
+                <div class="card config-card" style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+                  <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;">
+                    <i class="fas fa-bus" style="color: var(--primary-blue); font-size: 1.15rem;"></i>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b;">Vincular Motorista</h3>
+                  </div>
+                  <div class="card-body" style="padding: 0; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+                    <div style="margin-bottom: 16px;">
+                      <label style="font-weight: 600; color: #475569; font-size: 0.85rem; display: block; margin-bottom: 6px;">Código do Motorista (6 dígitos):</label>
+                      <input type="text" id="input-codigo-motorista" placeholder="EX: 7B3C92" maxlength="6" style="width: 100%; padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; outline: none; text-transform: uppercase; font-weight: bold; letter-spacing: 1.5px; font-family: inherit; box-sizing: border-box; transition: all 0.2s;" />
+                    </div>
+                    <button class="btn-primary-checkout" id="btn-vincular-motorista" style="padding: 11px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; width: 100%; border: none; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(15, 108, 213, 0.15);">
+                      <i class="fas fa-link"></i>
+                      <span>Vincular</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Preferências e Segurança -->
+                <div class="card config-card" style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+                  <div class="card-header" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;">
+                    <i class="fas fa-cog" style="color: var(--primary-blue); font-size: 1.15rem;"></i>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b;">Segurança e Alertas</h3>
+                  </div>
+                  <div class="card-body" style="padding: 0; display: flex; flex-direction: column; justify-content: space-between; flex: 1; gap: 14px;">
+                    
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                      <div class="config-checkbox" style="display: flex; align-items: center; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; font-weight: 500; cursor: pointer;">
+                          <input type="checkbox" checked style="accent-color: var(--primary-blue); width: 16px; height: 16px; cursor: pointer;" />
+                          <span>Alertas de status da van</span>
+                        </label>
+                      </div>
+                      <div class="config-checkbox" style="display: flex; align-items: center; gap: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; font-weight: 500; cursor: pointer;">
+                          <input type="checkbox" checked style="accent-color: var(--primary-blue); width: 16px; height: 16px; cursor: pointer;" />
+                          <span>Mensagens do motorista</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <button class="btn-small btn-seguranca" id="btn-alterar-senha" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; width: 100%; box-sizing: border-box; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                      <i class="fas fa-lock"></i>
+                      <span>Alterar Senha de Acesso</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
         </section>
       </div>

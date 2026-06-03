@@ -149,5 +149,8 @@ function criarTabelaHistorico(){
     return t;
 }
 
-document.addEventListener("DOMContentLoaded", GPSMap.init);
-window.addEventListener("beforeunload", GPSMap.stop);
+window.addEventListener("beforeunload", () => {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+});

@@ -26,10 +26,8 @@ const ChatRealtime = {
     }
 
     socketChat = io('http://localhost:5000/chat', {
-      auth: {
-        token: token
-      },
       query: {
+        token: token,
         usuario_id: usuarioID
       },
       reconnection: true,

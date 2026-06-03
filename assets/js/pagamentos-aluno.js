@@ -17,6 +17,11 @@ class GerenciadorPagamentosAluno {
         // Aguardar o modal ser inserido no DOM
         setTimeout(() => {
             this.anexarEventos();
+            this.carregarCartoesSalvos();
+            const btnAddCartao = document.getElementById('btn-adicionar-cartao-lista');
+            if (btnAddCartao) {
+                btnAddCartao.onclick = () => this.abrirModalNovoCartao();
+            }
         }, 100);
         
         await this.carregarPagamentos();
@@ -139,6 +144,12 @@ class GerenciadorPagamentosAluno {
                                 </div>
 
                                 <!-- Formulário de Cartão -->
+                                <div class="form-group" id="grupo-cartao-seletor" style="display: none; margin-bottom: 12px;">
+                                    <label>USAR CARTÃO SALVO</label>
+                                    <select class="form-control-checkout" id="seletor-cartao-salvo" style="background-color: #f0f7ff; border-color: #0f6cd5; font-weight: 600; color: #0f6cd5;">
+                                        <option value="">-- Selecione um cartão salvo --</option>
+                                    </select>
+                                </div>
                                 <div class="form-group">
                                     <label>NÚMERO DO CARTÃO</label>
                                     <input type="text" class="form-control-checkout" id="card-number" maxlength="19" placeholder="4000 1234 5678 9010" required>
@@ -375,6 +386,51 @@ class GerenciadorPagamentosAluno {
         document.getElementById('card-display-expiry').textContent = 'MM/AA';
         document.getElementById('card-display-cvv').textContent = '•••';
 
+        // Configurar dropdown de cartões salvos para preenchimento rápido
+        const seletor = document.getElementById('seletor-cartao-salvo');
+        const grupoSeletor = document.getElementById('grupo-cartao-seletor');
+        const cartoes = JSON.parse(localStorage.getItem(`vantrack_cartoes_${this.alunoId}`) || '[]');
+
+        if (seletor && grupoSeletor) {
+            if (cartoes.length > 0) {
+                seletor.innerHTML = '<option value="">-- Selecione um cartão salvo --</option>';
+                cartoes.forEach((c, index) => {
+                    seletor.innerHTML += `<option value="${index}">${c.brand.toUpperCase()} final ${c.number.slice(-4)} (${c.tipo === 'credito' ? 'Crédito' : 'Débito'})</option>`;
+                });
+                grupoSeletor.style.display = 'flex';
+                
+                seletor.onchange = (e) => {
+                    const idx = e.target.value;
+                    if (idx !== '') {
+                        const card = cartoes[idx];
+                        if (number) number.value = card.number;
+                        if (name) name.value = card.name;
+                        if (expiry) expiry.value = card.expiry;
+                        if (cvv) cvv.value = card.cvv;
+                        
+                        document.getElementById('card-display-number').textContent = card.number;
+                        document.getElementById('card-display-name').textContent = card.name.toUpperCase();
+                        document.getElementById('card-display-expiry').textContent = card.expiry;
+                        document.getElementById('card-display-cvv').textContent = card.cvv;
+                        
+                        const brandLogo = document.getElementById('card-brand-logo');
+                        if (brandLogo) brandLogo.textContent = card.brand.toUpperCase();
+                    } else {
+                        if (number) number.value = '';
+                        if (name) name.value = '';
+                        if (expiry) expiry.value = '';
+                        if (cvv) cvv.value = '';
+                        document.getElementById('card-display-number').textContent = '•••• •••• •••• ••••';
+                        document.getElementById('card-display-name').textContent = 'NOME COMPLETO';
+                        document.getElementById('card-display-expiry').textContent = 'MM/AA';
+                        document.getElementById('card-display-cvv').textContent = '•••';
+                    }
+                };
+            } else {
+                grupoSeletor.style.display = 'none';
+            }
+        }
+
         // Start dynamic PIX timer mockup
         this.iniciarPIXTimer();
 
@@ -580,7 +636,190 @@ class GerenciadorPagamentosAluno {
     formatarValor(valor) {
         return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
     }
-}
+
+    carregarCartoesSalvos() {
+        const container = document.getElementById('lista-cartoes-salvos');
+        if (!container) return;
+
+        const cartoes = JSON.parse(localStorage.getItem(`vantrack_cartoes_${this.alunoId}`) || '[]');
+        container.innerHTML = '';
+
+        if (cartoes.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #64748b; font-size: 0.9rem;">
+                    <i class="fas fa-info-circle" style="margin-bottom: 6px; display: block; font-size: 1.5rem; color: #cbd5e1;"></i>
+                    Nenhum cartão cadastrado
+                </div>
+            `;
+            return;
+        }
+
+        cartoes.forEach((c, index) => {
+            const div = document.createElement('div');
+            div.className = 'cartao-salvo-item';
+            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; transition: transform 0.2s;';
+            
+            let brandIcon = 'fa-credit-card';
+            let brandColor = '#64748b';
+            if (c.brand === 'visa') { brandIcon = 'fa-cc-visa'; brandColor = '#1a1f71'; }
+            else if (c.brand === 'mastercard') { brandIcon = 'fa-cc-mastercard'; brandColor = '#eb001b'; }
+            else if (c.brand === 'amex') { brandIcon = 'fa-cc-amex'; brandColor = '#007bc1'; }
+
+            div.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fab ${brandIcon}" style="font-size: 1.6rem; color: ${brandColor};"></i>
+                <div>
+                  <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b; text-transform: capitalize;">${c.brand} final ${c.number.slice(-4)}</div>
+                  <div style="font-size: 0.75rem; color: #64748b;">${c.tipo === 'credito' ? 'Crédito' : 'Débito'} • Val: ${c.expiry}</div>
+                </div>
+              </div>
+              <button class="btn-excluir-cartao" onclick="gerenciadorPagamentos.removerCartao(${index})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 0.9rem; padding: 4px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;"><i class="fas fa-trash"></i></button>
+            `;
+            
+            div.onmouseenter = () => { div.style.transform = 'scale(1.01)'; };
+            div.onmouseleave = () => { div.style.transform = 'scale(1)'; };
+
+            container.appendChild(div);
+        });
+    }
+
+    removerCartao(index) {
+        if (!confirm('Deseja realmente remover este cartão?')) return;
+        const cartoes = JSON.parse(localStorage.getItem(`vantrack_cartoes_${this.alunoId}`) || '[]');
+        cartoes.splice(index, 1);
+        localStorage.setItem(`vantrack_cartoes_${this.alunoId}`, JSON.stringify(cartoes));
+        if (typeof mostrarNotificacao !== 'undefined') {
+            mostrarNotificacao('Cartão removido com sucesso!', 'sucesso');
+        }
+        this.carregarCartoesSalvos();
+    }
+
+    abrirModalNovoCartao() {
+        const modalId = 'modal-novo-cartao';
+        let modal = document.getElementById(modalId);
+        if (modal) modal.remove();
+
+        const html = `
+            <div id="${modalId}" class="modal-overlay">
+                <div class="modal-content" style="max-width: 440px; padding: 28px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-plus-circle"></i> Novo Cartão</h2>
+                        <button class="btn-close-modal" id="btn-fechar-novo-cartao"><i class="fas fa-times"></i></button>
+                    </div>
+                    <form id="form-novo-cartao" style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="form-group">
+                            <label>TIPO DE CARTÃO</label>
+                            <select class="form-control-checkout" id="new-card-type" required style="font-weight: 600;">
+                                <option value="credito">Crédito</option>
+                                <option value="debito">Débito</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>NÚMERO DO CARTÃO</label>
+                            <input type="text" class="form-control-checkout" id="new-card-number" maxlength="19" placeholder="4000 1234 5678 9010" required>
+                        </div>
+                        <div class="form-group">
+                            <label>NOME IMPRESSO NO CARTÃO</label>
+                            <input type="text" class="form-control-checkout" id="new-card-name" placeholder="MARIA DOS SANTOS" required style="text-transform: uppercase;">
+                        </div>
+                        <div class="form-grid-row">
+                            <div class="form-group">
+                                <label>VALIDADE</label>
+                                <input type="text" class="form-control-checkout" id="new-card-expiry" maxlength="5" placeholder="MM/AA" required>
+                            </div>
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <input type="text" class="form-control-checkout" id="new-card-cvv" maxlength="4" placeholder="123" required>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px; margin-top: 15px;">
+                            <button type="button" class="btn-secondary-checkout" id="btn-cancelar-novo-cartao" style="flex: 1; padding: 10px;">Cancelar</button>
+                            <button type="submit" class="btn-primary-checkout" style="flex: 1.5; padding: 10px;">Salvar Cartão</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
+        
+        modal = document.getElementById(modalId);
+        
+        const inputNum = document.getElementById('new-card-number');
+        const inputExp = document.getElementById('new-card-expiry');
+        const inputCvv = document.getElementById('new-card-cvv');
+        
+        inputNum.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = v;
+        });
+
+        inputExp.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 2) {
+                v = v.substring(0, 2) + '/' + v.substring(2, 4);
+            }
+            e.target.value = v;
+        });
+
+        inputCvv.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        const fechar = () => modal.remove();
+        document.getElementById('btn-fechar-novo-cartao').onclick = fechar;
+        document.getElementById('btn-cancelar-novo-cartao').onclick = fechar;
+
+        document.getElementById('form-novo-cartao').onsubmit = (e) => {
+            e.preventDefault();
+            const num = inputNum.value.trim();
+            const name = document.getElementById('new-card-name').value.trim();
+            const exp = inputExp.value.trim();
+            const cvv = inputCvv.value.trim();
+            const tipo = document.getElementById('new-card-type').value;
+
+            if (num.replace(/\s/g, '').length < 16) {
+                if (typeof mostrarNotificacao !== 'undefined') mostrarNotificacao('Número de cartão inválido.', 'erro');
+                return;
+            }
+            if (name.length < 3) {
+                if (typeof mostrarNotificacao !== 'undefined') mostrarNotificacao('Nome do titular muito curto.', 'erro');
+                return;
+            }
+            if (!exp.includes('/') || exp.length < 5) {
+                if (typeof mostrarNotificacao !== 'undefined') mostrarNotificacao('Validade incorreta. Use MM/AA.', 'erro');
+                return;
+            }
+            if (cvv.length < 3) {
+                if (typeof mostrarNotificacao !== 'undefined') mostrarNotificacao('CVV incorreto.', 'erro');
+                return;
+            }
+
+            let brand = 'card';
+            if (num.startsWith('4')) brand = 'visa';
+            else if (num.startsWith('5')) brand = 'mastercard';
+            else if (num.startsWith('3')) brand = 'amex';
+
+            const cartoesObj = {
+                number: num,
+                name: name,
+                expiry: exp,
+                cvv: cvv,
+                tipo: tipo,
+                brand: brand
+            };
+
+            const saved = JSON.parse(localStorage.getItem(`vantrack_cartoes_${this.alunoId}`) || '[]');
+            saved.push(cartoesObj);
+            localStorage.setItem(`vantrack_cartoes_${this.alunoId}`, JSON.stringify(saved));
+
+            if (typeof mostrarNotificacao !== 'undefined') {
+                mostrarNotificacao('Cartão adicionado com sucesso!', 'sucesso');
+            }
+            fechar();
+            this.carregarCartoesSalvos();
+        };
+    }
 
 // Instância global
 let gerenciadorPagamentos;
